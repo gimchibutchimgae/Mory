@@ -42,8 +42,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "da9305d5-1ed9-4f4c-9a85-e9b5bf8c973b"
+        "projectId": "0eef63eb-68fa-4df3-a163-eb9239e9e31c"
       }
-    }
+    },
+    "owner": "kimchibuchimgae"
   }
 }
