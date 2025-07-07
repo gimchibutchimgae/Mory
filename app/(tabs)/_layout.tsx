@@ -4,20 +4,15 @@ import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSvg } from '@/components/ui/IconPng';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { TabBarContainer } from '@/components/ui/StyledTabBar';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
+        tabBarBackground: () => <TabBarContainer />,
         tabBarStyle: Platform.select({
           ios: {
             position: 'absolute',
@@ -29,21 +24,21 @@ export default function TabLayout() {
         name="chart"
         options={{
           title: '기록',
-          tabBarIcon: ({ color }) => <IconSvg name="record" />,
-          }}
-        />
+          tabBarIcon: () => <IconSvg name="record" />,
+        }}
+      />
       <Tabs.Screen
         name="index"
         options={{
           title: '홈',
-          tabBarIcon: ({ color }) => <IconSvg name="home" />,
+          tabBarIcon: () => <IconSvg name="home" />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: '프로필',
-          tabBarIcon: ({ color }) => <IconSvg name="profile" />,
+          tabBarIcon: () => <IconSvg name="profile" />,
         }}
       />
     </Tabs>
