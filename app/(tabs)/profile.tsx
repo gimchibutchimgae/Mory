@@ -1,10 +1,11 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import * as S from '@/components/ui/StyledScreen';
+
+export const options = { headerShown: false };
 
 export default function ProfileScreen() {
   return (
-    <ThemedView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <ThemedText type="title">프로필</ThemedText>
-    </ThemedView>
+    <S.ScreenContainer>
+      <S.ScreenTitle>프로필</S.ScreenTitle>
+    </S.ScreenContainer>
   );
 }

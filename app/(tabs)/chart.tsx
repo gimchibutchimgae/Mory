@@ -1,10 +1,11 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import * as S from '@/components/ui/StyledScreen';
 
-export default function ProfileScreen() {
+export const options = { headerShown: false };
+
+export default function ChartScreen() {
   return (
-    <ThemedView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <ThemedText type="title">기록</ThemedText>
-    </ThemedView>
+    <S.ScreenContainer>
+      <S.ScreenTitle>기록</S.ScreenTitle>
+    </S.ScreenContainer>
   );
 }
