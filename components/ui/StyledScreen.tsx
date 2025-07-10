@@ -4,11 +4,11 @@ export const ScreenContainer = styled.View`
   flex: 1;
   align-items: center;
   justify-content: center;
-  background-color: #fff;
+  background-color: #003366;
 `;
 
 export const ScreenTitle = styled.Text`
   font-size: 20px;
   font-weight: bold;
-  color: #222;
+  color: #ffffff;
 `;
