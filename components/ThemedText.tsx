@@ -1,21 +1,16 @@
 import { StyleSheet, Text, type TextProps } from 'react-native';
-
-import { useThemeColor } from '@/hooks/useThemeColor';
+import { Colors } from '@/constants/Colors';
 
 export type ThemedTextProps = TextProps & {
-  lightColor?: string;
-  darkColor?: string;
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
 };
 
 export function ThemedText({
   style,
-  lightColor,
-  darkColor,
   type = 'default',
   ...rest
 }: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const color = Colors.black; // 기본 텍스트 색상을 black으로 설정
 
   return (
     <Text
@@ -55,6 +50,6 @@ const styles = StyleSheet.create({
   link: {
     lineHeight: 30,
     fontSize: 16,
-    color: '#0a7ea4',
+    color: Colors.yellow, // 링크 색상을 yellow로 설정
   },
 });
