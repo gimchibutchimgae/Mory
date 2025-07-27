@@ -21,10 +21,17 @@ export default function InitialSetupScreen() {
   const handleNext = () => {
     if (step < TOTAL_STEPS) {
       setStep(step + 1);
-    }
-    else {
+    } else {
       signIn();
       router.replace('/(tabs)/');
+    }
+  };
+
+  const handleBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    } else {
+      router.back(); // 1단계일 경우 회원가입 화면으로 돌아감
     }
   };
 
@@ -32,7 +39,7 @@ export default function InitialSetupScreen() {
     <View style={styles.container}>
       <ProgressBar currentStep={step} totalSteps={TOTAL_STEPS} />
       <View style={styles.header}>
-        <BackButton />
+        <BackButton onPress={handleBack} />{/* onPress prop 추가 */}
         <Text style={styles.title}>Initial Setup</Text>
         <View style={{ width: 24 }} />{/* Placeholder for alignment */}
       </View>

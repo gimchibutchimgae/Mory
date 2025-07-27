@@ -4,10 +4,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 
-export default function BackButton() {
+interface BackButtonProps {
+  onPress?: () => void; // onPress prop 추가
+}
+
+export default function BackButton({ onPress }: BackButtonProps) {
   const router = useRouter();
   return (
-    <TouchableOpacity onPress={() => router.back()} style={styles.container}>
+    <TouchableOpacity onPress={onPress || (() => router.back())} style={styles.container}>
       <MaterialIcons name="arrow-back-ios" size={24} color={Colors.white} />
     </TouchableOpacity>
   );
