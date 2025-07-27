@@ -1,31 +1,49 @@
 import { Link, useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import InputWithIcon from '@/components/InputWithIcon';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
-import { useAuth } from '@/app/context/AuthContext';
+import { useAuth } from '@/app/context/AuthContext.ts';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Colors } from '@/constants/Colors';
+import { Theme } from '@/constants/Themes';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
   const [autoLogin, setAutoLogin] = useState(false);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | undefined>(undefined);
+  const [passwordError, setPasswordError] = useState<string | undefined>(undefined);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('오류', '이메일과 비밀번호를 입력해주세요.');
+    let valid = true;
+    setUsernameError(undefined);
+    setPasswordError(undefined);
+
+    if (!username) {
+      setUsernameError('이름을 입력해주세요.');
+      valid = false;
+    }
+
+    if (!password) {
+      setPasswordError('비밀번호를 입력해주세요.');
+      valid = false;
+    }
+
+    if (!valid) {
       return;
     }
+
     setLoading(true);
     try {
       await signIn();
       router.replace('/(tabs)/');
     } catch (error) {
-      Alert.alert('로그인 실패', '이메일 또는 비밀번호가 잘못되었습니다.');
+      // 실제 로그인 실패 시 백엔드에서 오는 오류 메시지를 처리할 수 있습니다.
+      // 여기서는 일반적인 메시지를 표시합니다.
+      setPasswordError('이름 또는 비밀번호가 잘못되었습니다.');
     } finally {
       setLoading(false);
     }
@@ -39,22 +57,22 @@ export default function LoginScreen() {
         resizeMode="contain"
       />
 
-      <InputWithIcon iconName="account" placeholder="아이디" value={email} onChangeText={setEmail} />
-      <InputWithIcon iconName="lock" placeholder="비밀번호" secureTextEntry value={password} onChangeText={setPassword} />
+      <InputWithIcon iconName="account" placeholder="아이디" value={username} onChangeText={setUsername} error={usernameError} />
+      <InputWithIcon iconName="lock" placeholder="비밀번호" secureTextEntry value={password} onChangeText={setPassword} error={passwordError} />
 
       <View style={styles.autoLoginContainer}>
         <TouchableOpacity onPress={() => setAutoLogin(!autoLogin)} style={styles.checkboxButton}>
           <MaterialCommunityIcons
             name={autoLogin ? "checkbox-marked" : "checkbox-blank-outline"}
             size={20}
-            color={Colors.white}
+            color={Theme.colors.white}
           />
         </TouchableOpacity>
         <Text style={styles.autoLoginText}>자동 로그인</Text>
       </View>
 
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
-        {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.loginButtonText}>로그인</Text>}
+        {loading ? <ActivityIndicator color={Theme.colors.white} /> : <Text style={styles.loginButtonText}>로그인</Text>}
       </TouchableOpacity>
 
       <View style={styles.linkContainer}>
@@ -81,8 +99,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: Colors.primaryBackground,
+    padding: Theme.spacing.medium,
+    backgroundColor: Theme.colors.primaryBackground,
   },
   logoImage: {
     width: 450, // 이미지 너비 조정
@@ -92,56 +110,56 @@ const styles = StyleSheet.create({
   autoLoginContainer: {
     flexDirection: 'row',
     alignSelf: 'flex-end',
-    marginRight: 10,
-    marginBottom: 20,
+    marginRight: Theme.spacing.small,
+    marginBottom: Theme.spacing.medium,
     alignItems: 'center',
   },
   checkboxButton: {
-    marginRight: 5,
+    marginRight: Theme.spacing.small,
   },
   autoLoginText: {
-    color: Colors.white,
+    color: Theme.colors.white,
   },
   loginButton: {
-    backgroundColor: Colors.secondaryBackground,
+    backgroundColor: Theme.colors.secondaryBackground,
     width: '100%',
-    paddingVertical: 15,
-    borderRadius: 8,
+    paddingVertical: Theme.spacing.medium,
+    borderRadius: Theme.borderRadius.medium,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: Theme.spacing.medium,
   },
   loginButtonText: {
-    color: Colors.white,
-    fontSize: 18,
+    color: Theme.colors.white,
+    fontSize: Theme.fontSizes.medium,
     fontWeight: 'bold',
   },
   linkContainer: {
     flexDirection: 'row',
-    marginTop: 20,
+    marginTop: Theme.spacing.medium,
   },
   linkText: {
-    color: Colors.white,
-    marginHorizontal: 5,
-    fontSize: 14,
+    color: Theme.colors.white,
+    marginHorizontal: Theme.spacing.small,
+    fontSize: Theme.fontSizes.small,
   },
   separator: {
-    color: Colors.white,
-    fontSize: 14,
+    color: Theme.colors.white,
+    fontSize: Theme.fontSizes.small,
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 30,
+    marginVertical: Theme.spacing.large,
     width: '100%',
   },
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: Colors.darkGray,
+    backgroundColor: Theme.colors.darkGray,
   },
   dividerText: {
-    color: Colors.lightGray,
-    marginHorizontal: 10,
-    fontSize: 14,
+    color: Theme.colors.lightGray,
+    marginHorizontal: Theme.spacing.small,
+    fontSize: Theme.fontSizes.small,
   },
 });

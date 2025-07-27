@@ -31,7 +31,8 @@ export function IconSvg({ name, size = 28, color = 'white' }: IconSvgProps) {
   return (
     <Image
       source={source}
-      style={{ width: size, height: size, tintColor: color } as ImageStyle} // tintColor 적용
+      style={{ width: size, height: size } as ImageStyle}
+      tintColor={color} // tintColor 적용
       resizeMode="contain"
     />
   );

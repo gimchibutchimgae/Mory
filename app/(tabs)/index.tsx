@@ -1,10 +1,10 @@
 import { Text, View } from 'react-native';
-import { Colors } from '@/constants/Colors';
+import { Theme } from '@/constants/Themes';
 
 export default function ProfileScreen() {
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.primaryBackground }}>
-      <Text style={{ fontSize: 20, fontWeight: 'bold', color: Colors.white }}>홈</Text>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Theme.colors.primaryBackground }}>
+      <Text style={{ fontSize: Theme.fontSizes.large, fontWeight: 'bold', color: Theme.colors.white }}>홈</Text>
     </View>
   );
 }

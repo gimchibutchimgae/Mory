@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
+import { Themes } from '@/constants/Themes';
 
 interface CharacterSelectionProps {
   label: string;
@@ -22,7 +22,7 @@ export default function CharacterSelection({
           isSelected ? styles.selectedCircle : null,
         ]}
       >
-        <MaterialCommunityIcons name="star" size={60} color={isSelected ? Colors.yellow : Colors.white} />
+        <MaterialCommunityIcons name="star" size={60} color={isSelected ? Themes.yellow : Themes.white} />
       </View>
       <Text style={styles.labelText}>{label}</Text>
     </TouchableOpacity>
@@ -38,18 +38,18 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: Colors.secondaryBackground,
+    backgroundColor: Themes.secondaryBackground,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
   },
   selectedCircle: {
-    borderColor: Colors.yellow,
+    borderColor: Themes.yellow,
   },
   labelText: {
     marginTop: 10,
     fontSize: 16,
-    color: Colors.white,
+    color: Themes.white,
   },
 });

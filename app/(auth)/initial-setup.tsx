@@ -6,7 +6,7 @@ import BackButton from '@/components/BackButton';
 import CharacterSelection from '@/components/CharacterSelection';
 import { useAuth } from '@/app/context/AuthContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
+import { Themes } from '@/constants/Themes';
 
 const TOTAL_STEPS = 4;
 
@@ -52,7 +52,7 @@ export default function InitialSetupScreen() {
           <TextInput
             style={styles.input}
             placeholder="이름을 입력하세요"
-            placeholderTextColor={Colors.lightGray}
+            placeholderTextColor={Themes.lightGray}
             value={name}
             onChangeText={setName}
           />
@@ -104,7 +104,7 @@ export default function InitialSetupScreen() {
           <Text style={styles.stepTitle}>너의 감정을 가지고</Text>
           <Text style={styles.stepSubtitle}>모리가 어떤 모습으로 성장할까</Text>
           <Text style={styles.label}>감정 일기 시작해보자</Text>
-          <MaterialCommunityIcons name="star-circle" size={150} color={Colors.white} style={styles.characterPlaceholder} />
+          <MaterialCommunityIcons name="star-circle" size={150} color={Themes.white} style={styles.characterPlaceholder} />
         </View>
       )}
 
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: Colors.primaryBackground,
+    backgroundColor: Themes.primaryBackground,
   },
   header: {
     flexDirection: 'row',
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.white,
+    color: Themes.white,
   },
   stepContent: {
     flex: 1,
@@ -142,27 +142,27 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: Colors.white,
+    color: Themes.white,
     marginBottom: 10,
   },
   stepSubtitle: {
     fontSize: 18,
-    color: Colors.white,
+    color: Themes.white,
     marginBottom: 30,
   },
   label: {
     fontSize: 16,
-    color: Colors.white,
+    color: Themes.white,
     marginBottom: 10,
   },
   input: {
     height: 50,
     width: '100%',
-    backgroundColor: Colors.white,
+    backgroundColor: Themes.white,
     borderRadius: 8,
     paddingHorizontal: 15,
     marginBottom: 20,
-    color: Colors.black,
+    color: Themes.black,
   },
   characterSelectionContainer: {
     flexDirection: 'row',
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   nextButton: {
-    backgroundColor: Colors.secondaryBackground,
+    backgroundColor: Themes.secondaryBackground,
     width: '100%',
     paddingVertical: 15,
     borderRadius: 8,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   nextButtonText: {
-    color: Colors.white,
+    color: Themes.white,
     fontSize: 18,
     fontWeight: 'bold',
   },

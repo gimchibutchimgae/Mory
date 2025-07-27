@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Colors } from '@/constants/Colors';
+import { Themes } from '@/constants/Themes';
 
 export default function TabBarBackground() {
   return <View style={styles.container} />;
@@ -9,6 +9,6 @@ export default function TabBarBackground() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.darkPrimaryBackground, // 더 어두운 배경색 적용
+    backgroundColor: Themes.darkPrimaryBackground, // 더 어두운 배경색 적용
   },
 });
