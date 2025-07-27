@@ -62,6 +62,8 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     height: 50,
     width: '100%',
+    borderColor: Colors.gray,
+    borderWidth: 1,
   },
   icon: {
     marginRight: 10,

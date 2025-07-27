@@ -1,10 +1,10 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { Text, View } from 'react-native';
+import { Colors } from '@/constants/Colors';
 
 export default function ProfileScreen() {
   return (
-    <ThemedView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <ThemedText type="title">기록</ThemedText>
-    </ThemedView>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.primaryBackground }}>
+      <Text style={{ fontSize: 20, fontWeight: 'bold', color: Colors.white }}>기록</Text>
+    </View>
   );
 }

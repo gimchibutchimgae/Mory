@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-export const AuthContext = createContext<{ signIn: () => void } | null>(null);
+export const AuthContext = createContext<{ signIn: () => Promise<void>; signOut: () => void; signUp: () => Promise<void>; } | null>(null);
 
 export function useAuth() {
   const auth = useContext(AuthContext);

@@ -10,8 +10,17 @@ export default function RootLayout() {
 
   const authContext = useMemo(
     () => ({
-      signIn: () => {
+      signIn: async () => {
+        // Simulate a network request
+        await new Promise(resolve => setTimeout(resolve, 1000));
         setIsSignedIn(true);
+      },
+      signOut: () => {
+        setIsSignedIn(false);
+      },
+      signUp: async () => {
+        // Simulate a network request
+        await new Promise(resolve => setTimeout(resolve, 1000));
       },
     }),
     [],

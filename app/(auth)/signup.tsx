@@ -1,16 +1,38 @@
 import { useRouter } from 'expo-router';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import BackButton from '@/components/BackButton';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Colors } from '@/constants/Colors';
 import InputWithIcon from '@/components/InputWithIcon';
+import { useAuth } from '@/app/context/AuthContext';
 
 export default function SignUpScreen() {
   const router = useRouter();
+  const { signUp } = useAuth();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSignUp = async () => {
+    if (!name || !password || !confirmPassword) {
+      Alert.alert('오류', '모든 필드를 입력해주세요.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('오류', '비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await signUp();
+      router.push('/initial-setup');
+    } catch (error) {
+      Alert.alert('회원가입 실패', '오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -27,8 +49,8 @@ export default function SignUpScreen() {
       <InputWithIcon placeholder="비밀번호를 입력하세요" secureTextEntry showEyeIcon value={password} onChangeText={setPassword} />
       <InputWithIcon placeholder="다시 한번 입력해주세요." secureTextEntry showEyeIcon value={confirmPassword} onChangeText={setConfirmPassword} />
 
-      <TouchableOpacity style={styles.signupButton} onPress={() => router.push('/initial-setup')}>
-        <Text style={styles.signupButtonText}>회원가입</Text>
+      <TouchableOpacity style={styles.signupButton} onPress={handleSignUp} disabled={loading}>
+        {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.signupButtonText}>회원가입</Text>}
       </TouchableOpacity>
     </View>
   );

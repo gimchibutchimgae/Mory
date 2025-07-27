@@ -1,5 +1,5 @@
 import { Link, useRouter } from 'expo-router';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import InputWithIcon from '@/components/InputWithIcon';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
 import { useAuth } from '@/app/context/AuthContext';
@@ -13,10 +13,22 @@ export default function LoginScreen() {
   const [autoLogin, setAutoLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    signIn();
-    router.replace('/(tabs)/');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('오류', '이메일과 비밀번호를 입력해주세요.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await signIn();
+      router.replace('/(tabs)/');
+    } catch (error) {
+      Alert.alert('로그인 실패', '이메일 또는 비밀번호가 잘못되었습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,8 +53,8 @@ export default function LoginScreen() {
         <Text style={styles.autoLoginText}>자동 로그인</Text>
       </View>
 
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>로그인</Text>
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
+        {loading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.loginButtonText}>로그인</Text>}
       </TouchableOpacity>
 
       <View style={styles.linkContainer}>
