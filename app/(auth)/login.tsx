@@ -1,5 +1,5 @@
 import { Link, useRouter } from 'expo-router';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import InputWithIcon from '@/components/InputWithIcon';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
 import { useAuth } from '@/app/context/AuthContext';
@@ -21,7 +21,11 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>mory</Text>
+      <Image
+        source={require('@/assets/images/logo.png')}
+        style={styles.logoImage}
+        resizeMode="contain"
+      />
 
       <InputWithIcon iconName="account" placeholder="아이디" value={email} onChangeText={setEmail} />
       <InputWithIcon iconName="lock" placeholder="비밀번호" secureTextEntry value={password} onChangeText={setPassword} />
@@ -34,7 +38,7 @@ export default function LoginScreen() {
             color={Colors.white}
           />
         </TouchableOpacity>
-        <Text style={styles.autoLoginText}>자동로그인</Text>
+        <Text style={styles.autoLoginText}>자동 로그인</Text>
       </View>
 
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
@@ -68,11 +72,10 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: Colors.primaryBackground,
   },
-  logo: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: Colors.white,
-    marginBottom: 50,
+  logoImage: {
+    width: 450, // 이미지 너비 조정
+    height: 200, // 이미지 높이 조정
+    marginBottom: 50, // 기존 텍스트의 marginBottom과 유사하게 조정
   },
   autoLoginContainer: {
     flexDirection: 'row',

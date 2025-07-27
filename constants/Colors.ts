@@ -5,6 +5,7 @@
 
 export const Colors = {
   primaryBackground: '#1a2a4a',
+  darkPrimaryBackground: '#15253a', // 네비게이션 바를 위한 더 어두운 배경색
   secondaryBackground: '#2a3a5a',
   white: '#FFFFFF',
   black: '#000000',
