@@ -1,3 +1,4 @@
+import { NaviBar } from '@/components/navBar/NavBar';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMemo, useState } from 'react';
