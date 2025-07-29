@@ -21,13 +21,15 @@ export default function RootLayout() {
     <AuthContext.Provider value={authContext}>
       <Stack>
         {isSignedIn ? (
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(calendar)" options={{ headerShown: false }} />
+          </>
         ) : (
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         )}
         <Stack.Screen name="+not-found" />
       </Stack>
-      <NaviBar />
       <StatusBar style="auto" />
     </AuthContext.Provider>
   );
