@@ -72,6 +72,48 @@ const WriteSvg = ({ size = 24 }: { size?: number }) => (
   </Svg>
 );
 
+// 말풍선 컴포넌트
+const SpeechBubble = ({ message }: { message: string }) => (
+  <View style={{
+    position: 'absolute',
+    bottom: 110,
+    right: 20,
+    backgroundColor: '#6B7280',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+    maxWidth: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  }}>
+    <Text style={{
+      color: '#FFFFFF',
+      fontSize: 14,
+      fontFamily: 'Pretendard',
+      textAlign: 'center'
+    }}>
+      {message}
+    </Text>
+    {/* 말풍선 꼬리 */}
+    <View style={{
+      position: 'absolute',
+      bottom: -8,
+      right: 20,
+      width: 0,
+      height: 0,
+      borderLeftWidth: 8,
+      borderRightWidth: 8,
+      borderTopWidth: 8,
+      borderLeftColor: 'transparent',
+      borderRightColor: 'transparent',
+      borderTopColor: '#6B7280',
+    }} />
+  </View>
+);
+
 export default function MonthCalendar() {
   const julyRandomMap = useMemo<JulyRandomMap>(() => getJulyRandomMap(), []);
   
@@ -172,6 +214,11 @@ export default function MonthCalendar() {
         }}
       />
       </View>
+      
+      {/* 말풍선 - 오늘 일기를 작성하지 않았을 때만 표시 */}
+      {!hasTodayDiary && (
+        <SpeechBubble message="오늘 하루 어땠어?" />
+      )}
       
       {/* 테스트용 버튼 - 실제 구현시에는 제거 */}
       <TouchableOpacity
