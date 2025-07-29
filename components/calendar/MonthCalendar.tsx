@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
+import Svg, { Path } from 'react-native-svg';
 import calendarStyles from './style';
 
 // 그라데이션 색상 정의
@@ -50,6 +51,16 @@ function getJulyRandomMap(): JulyRandomMap {
 }
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+// 오늘 표시용 SVG 컴포넌트
+const TodayMorySvg = ({ size = 16 }: { size?: number }) => (
+  <Svg width={size} height={size} viewBox="0 0 35 34" fill="none">
+    <Path
+      d="M11.3815 6.07682C14.1805 4.65209 17.9176 7.71575 19.1436 8.1812C20.3696 8.64664 24.3841 5.90395 26.7874 8.1185C29.1906 10.333 27.0216 14.5253 27.1969 15.999C27.3723 17.4727 30.9721 20.6853 29.6063 23.4012C28.2184 26.1611 23.259 25.1937 22.0683 25.7998C20.8776 26.4059 19.5555 30.9224 15.9426 30.8048C12.3298 30.6872 11.0572 24.7442 11.0572 24.7442C11.0572 24.7442 4.70379 23.8736 4.67913 20.0977C4.65447 16.3218 7.73134 15.6504 8.63475 13.8754C9.53816 12.1003 8.50398 7.54157 11.3815 6.07682Z"
+      fill="#FBFAEF"
+    />
+  </Svg>
+);
 
 export default function MonthCalendar() {
   const julyRandomMap = useMemo<JulyRandomMap>(() => getJulyRandomMap(), []);
@@ -123,6 +134,18 @@ export default function MonthCalendar() {
                   {date?.day}
                 </Text>
               </LinearGradient>
+              
+              {/* 오늘 날짜에만 별 아이콘 표시 */}
+              {isToday && (
+                <View style={{
+                  position: 'absolute',
+                  top: 2,
+                  left: -7,
+                  zIndex: -1
+                }}>
+                  <TodayMorySvg size={33} />
+                </View>
+              )}
             </View>
           );
         }}
