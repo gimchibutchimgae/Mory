@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Themes } from '@/constants/Themes';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 
 interface InputWithIconProps {
   iconName?: keyof typeof MaterialCommunityIcons.glyphMap; // 아이콘은 선택적
@@ -23,6 +29,25 @@ export default function InputWithIcon({
   error,
 }: InputWithIconProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(!secureTextEntry); // secureTextEntry가 true면 초기에는 가려진 상태
+  const shake = useSharedValue(0);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: shake.value }],
+    };
+  });
+
+  useEffect(() => {
+    if (error) {
+      shake.value = withSequence(
+        withTiming(-10, { duration: 50 }),
+        withTiming(10, { duration: 50 }),
+        withTiming(-10, { duration: 50 }),
+        withTiming(10, { duration: 50 }),
+        withTiming(0, { duration: 50 })
+      );
+    }
+  }, [error]);
 
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
@@ -30,7 +55,7 @@ export default function InputWithIcon({
 
   return (
     <View style={styles.wrapper}>
-      <View style={[styles.container, error ? styles.errorBorder : {}]}>
+      <Animated.View style={[styles.container, error ? styles.errorBorder : {}, animatedStyle]}>
         {iconName && (
           <MaterialCommunityIcons name={iconName} size={24} color={Themes.gray} style={styles.icon} />
         )}
@@ -51,7 +76,7 @@ export default function InputWithIcon({
             />
           </TouchableOpacity>
         )}
-      </View>
+      </Animated.View>
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );

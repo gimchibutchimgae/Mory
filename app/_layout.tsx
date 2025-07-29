@@ -18,6 +18,7 @@ const API_BASE_URL = 'https://mory-backend-production.up.railway.app';
 export default function RootLayout() {
   const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [googleLoginError, setGoogleLoginError] = useState<string | null>(null); // Google 로그인 오류 상태 추가
 
   // Google OAuth 클라이언트 ID 설정 (YOUR_IOS_CLIENT_ID, YOUR_ANDROID_CLIENT_ID, YOUR_WEB_CLIENT_ID를 실제 값으로 대체해야 합니다.)
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -58,6 +59,7 @@ export default function RootLayout() {
 
   const googleSignInToServer = async (accessToken: string) => {
     try {
+      setGoogleLoginError(null); // 새로운 시도 전에 오류 초기화
       const res = await axios.get(`${API_BASE_URL}/auth/google/redirect`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -72,21 +74,20 @@ export default function RootLayout() {
       } else if (res.data.status === 'register') {
         // 회원가입이 필요한 경우, 추가 정보 입력 페이지로 이동하거나 처리
         console.log('User needs to register:', res.data.value);
-        
       }
     } catch (error) {
       console.error('Google sign-in to server failed:', error);
       if (axios.isAxiosError(error) && error.response) {
-        throw new Error(error.response.data.message || 'Google 로그인에 실패했습니다.');
+        setGoogleLoginError(error.response.data.message || 'Google 로그인에 실패했습니다.');
       } else {
-        throw error;
+        setGoogleLoginError('알 수 없는 오류가 발생했습니다.');
       }
     }
   };
 
   const authContext = useMemo(
     () => ({
-      signIn: async (username, password) => {
+      signIn: async (username: any, password: any) => {
         try {
           const response = await axios.post(`${API_BASE_URL}/auth/login`, {
             email: username,
@@ -111,14 +112,14 @@ export default function RootLayout() {
         await AsyncStorage.removeItem('isSignedIn');
         await AsyncStorage.removeItem('accessToken');
       },
-      signUp: async (name, email, password, mbti, provider) => {
+      signUp: async (name: any, email: any, password: any, mbti: any, provider: any) => {
         try {
           const response = await axios.post(`${API_BASE_URL}/auth/register`, {
             email,
             name,
             password,
             mbti: mbti || 'EF',
-            provider: provider || 'local',
+            provider: provider,
           });
           await AsyncStorage.setItem('isSignedIn', JSON.stringify(true));
           setIsSignedIn(true);
@@ -147,11 +148,42 @@ export default function RootLayout() {
           throw error;
         }
       },
+      getUserInfo: async () => { // getUserInfo 함수 재구현
+        try {
+          const accessToken = await AsyncStorage.getItem('accessToken');
+          if (!accessToken) {
+            throw new Error('No access token found');
+          }
+          // /diary 엔드포인트를 통해 사용자 정보를 가져옵니다.
+          const response = await axios.get(`${API_BASE_URL}/diary`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+          // 일기 목록이 비어있지 않다면 첫 번째 일기의 사용자 정보를 반환합니다.
+          if (response.data && response.data.length > 0 && response.data[0].user) {
+            return response.data[0].user;
+          } else {
+            // 일기가 없거나 사용자 정보가 없는 경우, 기본 정보를 반환하거나 오류를 던질 수 있습니다.
+            // 여기서는 임시로 빈 객체를 반환합니다. 실제 앱에서는 적절한 처리가 필요합니다.
+            return { name: '사용자', email: '정보 없음' };
+          }
+        } catch (error) {
+          console.error('Failed to get user info:', error);
+          if (axios.isAxiosError(error) && error.response) {
+            throw new Error(error.response.data.message || '사용자 정보를 가져오는데 실패했습니다.');
+          } else {
+            throw error;
+          }
+        }
+      },
       googleSignIn: async () => {
+        setGoogleLoginError(null); // Google 로그인 시작 전 오류 초기화
         await promptAsync();
       },
+      googleLoginError, // AuthContext에 googleLoginError 노출
     }),
-    [promptAsync],
+    [promptAsync, googleLoginError], // googleLoginError를 의존성 배열에 추가
   );
 
   if (loading) {

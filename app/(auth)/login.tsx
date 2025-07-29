@@ -4,23 +4,33 @@ import InputWithIcon from '@/components/InputWithIcon';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
 import { useAuth } from '@/app/context/AuthContext.ts';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // useEffect 추가
 import { Theme } from '@/constants/Themes';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn, googleSignIn } = useAuth();
+  const { signIn, googleSignIn, googleLoginError } = useAuth(); // googleLoginError 가져오기
   const [autoLogin, setAutoLogin] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [usernameError, setUsernameError] = useState<string | undefined>(undefined);
   const [passwordError, setPasswordError] = useState<string | undefined>(undefined);
+  const [generalError, setGeneralError] = useState<string | undefined>(undefined); // 일반 오류 메시지 상태 추가
+
+  useEffect(() => {
+    if (googleLoginError) {
+      setGeneralError(googleLoginError); // Google 로그인 오류를 일반 오류 메시지로 설정
+      setUsernameError(googleLoginError); // Google 로그인 오류 시 usernameError 설정
+      setPasswordError(googleLoginError); // Google 로그인 오류 시 passwordError 설정
+    }
+  }, [googleLoginError]);
 
   const handleLogin = async () => {
     let valid = true;
     setUsernameError(undefined);
     setPasswordError(undefined);
+    setGeneralError(undefined); // 새로운 로그인 시도 전에 일반 오류 메시지 초기화
 
     if (!username) {
       setUsernameError('이름을 입력해주세요.');
@@ -41,11 +51,13 @@ export default function LoginScreen() {
       await signIn(username, password);
       router.replace('/(tabs)/');
     } catch (error) {
+      let errorMessage = '이름 또는 비밀번호가 잘못되었습니다.';
       if (error instanceof Error) {
-        setPasswordError(error.message);
-      } else {
-        setPasswordError('이름 또는 비밀번호가 잘못되었습니다.');
+        errorMessage = error.message;
       }
+      setGeneralError(errorMessage); // 일반 로그인 오류를 일반 오류 메시지로 설정
+      setUsernameError(errorMessage); // 일반 로그인 오류 시 usernameError 설정
+      setPasswordError(errorMessage); // 일반 로그인 오류 시 passwordError 설정
     } finally {
       setLoading(false);
     }
@@ -72,6 +84,8 @@ export default function LoginScreen() {
         </TouchableOpacity>
         <Text style={styles.autoLoginText}>자동 로그인</Text>
       </View>
+
+      
 
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
         {loading ? <ActivityIndicator color={Theme.colors.white} /> : <Text style={styles.loginButtonText}>로그인</Text>}
@@ -161,5 +175,10 @@ const styles = StyleSheet.create({
     color: Theme.colors.lightGray,
     marginHorizontal: Theme.spacing.small,
     fontSize: Theme.fontSizes.small,
+  },
+  errorText: { // 오류 메시지 스타일 추가
+    color: 'red',
+    marginBottom: Theme.spacing.small,
+    textAlign: 'center',
   },
 });
