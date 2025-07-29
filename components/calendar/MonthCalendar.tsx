@@ -62,6 +62,16 @@ const TodayMorySvg = ({ size = 16 }: { size?: number }) => (
   </Svg>
 );
 
+// Write 아이콘 SVG 컴포넌트
+const WriteSvg = ({ size = 24 }: { size?: number }) => (
+  <Svg width={32} height={32} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+      fill="#001F3D"
+    />
+  </Svg>
+);
+
 export default function MonthCalendar() {
   const julyRandomMap = useMemo<JulyRandomMap>(() => getJulyRandomMap(), []);
   
@@ -164,26 +174,32 @@ export default function MonthCalendar() {
       </View>
       
       {/* 테스트용 버튼 - 실제 구현시에는 제거 */}
-      <View style={{ padding: 10, alignItems: 'center' }}>
-        <TouchableOpacity
-          onPress={() => {
-            setHasTodayDiary(!hasTodayDiary);
-            // 랜덤으로 감정 상태 변경
-            const emotions: DayState[] = ['red', 'yellow', 'green', 'blue'];
-            setTodayEmotionState(emotions[Math.floor(Math.random() * emotions.length)]);
-          }}
-          style={{
-            backgroundColor: '#fff',
-            padding: 8,
-            borderRadius: 8,
-            marginBottom: 10
-          }}
-        >
-          <Text style={{ color: '#000', fontSize: 12 }}>
-            {hasTodayDiary ? '오늘 일기 삭제 (테스트)' : '오늘 일기 작성 (테스트)'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        onPress={() => {
+          setHasTodayDiary(!hasTodayDiary);
+          // 랜덤으로 감정 상태 변경
+          const emotions: DayState[] = ['red', 'yellow', 'green', 'blue'];
+          setTodayEmotionState(emotions[Math.floor(Math.random() * emotions.length)]);
+        }}
+        style={{
+          position: 'absolute',
+          bottom: 30,
+          right: 30,
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          width: 63,
+          height: 63,
+          borderRadius: 30,
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: '#000',
+          shadowOffset: { width: 4, height: 4 },
+          shadowOpacity: 0.25,
+          shadowRadius: 2,
+          elevation: 5,
+        }}
+      >
+        <WriteSvg size={20} />
+      </TouchableOpacity>
     </View>
   );
 }
