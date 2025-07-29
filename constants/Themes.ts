@@ -14,6 +14,7 @@ export const Themes = {
   lightGray: '#AAAAAA',
   darkGray: '#555555',
   googleRed: '#DB4437',
+  red: '#FF9A9A'
 };
 
 export const Theme = {
@@ -28,12 +29,14 @@ export const Theme = {
     lightGray: Themes.lightGray,
     darkGray: Themes.darkGray,
     googleRed: Themes.googleRed,
+    red: Themes.red,
     error: 'red',
   },
   fontSizes: {
     small: 12,
     medium: 16,
     large: 20,
+    xLarge: 28,
     title: 24,
     header: 28,
   },

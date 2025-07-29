@@ -21,3 +21,352 @@
 - **프론트엔드**: React Native, Expo, TypeScript
 - **백엔드**: Node.js, Express, MongoDB
 - **AI 분석**: OpenAI ChatGPT API
+
+## API 명세서
+
+[**https://**mory-backend-production.up.railway.app/](https://mory-backend-production.up.railway.app/) (주의: http→https)
+
+JWT가 존재하지 않거나, 만료되었다면 `Unauthorized Error`
+
+# [ Get ]
+
+- 🔒Google 로그인 `/auth/google`
+    
+    요청시 구글 로그인 페이지로 리다이렉트 됨
+    
+- 🔒Google 리다이렉션 `/auth/google/redirect`
+    
+    계정이 있는 경우 : 로그인
+    
+    ```json
+    {
+      "status": "login",
+      "value": {
+        "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJrb3JlYW4xNzkwQGdtYWlsLmNvbSIsIm5hbWUiOiLsnbTsnqztl4wiLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MjMzODgyNCwiZXhwIjoxNzUyMzUzMjI0fQ.h3hA3Q2UigkBooQwyN9zb_NTY99MEG_vFZ58GJSttlo"
+      }
+    }
+    ```
+    
+    계정이 없는 경우 : 회원가입
+    
+    ```json
+    {
+      "status": "register",
+      "value": {
+        "email": "korean1790@gmail.com",
+        "name": "이재헌",
+        "provider": "google"
+      }
+    }
+    ```
+    
+- 📕일기 조회 `/diary/:id`
+    
+    ```json
+    {
+        "id": 8,
+        "title": "test is test3",
+        "content": "but test is not test3",
+        "createdAt": "2025-07-12T16:52:02.081Z",
+        "year": 2025,
+        "month": 7,
+        "day": 13,
+        "user": {
+            "id": 6,
+            "name": "이재헌",
+            "email": "korean1790@gmail.com",
+            "password": "1234",
+            "mbti": "EF",
+            "provider": "google",
+            "role": "user"
+        },
+        "analysis": null
+    }
+    ```
+    
+    자신의 일기가 아닌 경우
+    
+    ```json
+    {
+        "message": "해당 일기의 소유자가 아닙니다.",
+        "error": "Forbidden",
+        "statusCode": 403
+    }
+    ```
+    
+- 📕자신의 일기 모두 조회 `/diary`
+    
+    ```json
+    [
+        {
+            "id": 8,
+            "title": "test is test3",
+            "content": "but test is not test3",
+            "createdAt": "2025-07-12T16:52:02.081Z",
+            "year": 2025,
+            "month": 7,
+            "day": 13,
+            "user": {
+                "id": 6,
+                "name": "이재헌",
+                "email": "korean1790@gmail.com",
+                "password": "1234",
+                "mbti": "EF",
+                "provider": "google",
+                "role": "user"
+            },
+            "analysis": null
+        }
+    ]
+    ```
+    
+- 📊분석 결과 조회 `/analysis/:id`
+    
+    ```json
+    {
+        "id": 3,
+        "primary_emotion_type": "RED",
+        "emotions": {
+            "RED": [
+                "격분한",
+                "초조한"
+            ],
+            "YELLOW": [
+                "역겨운"
+            ],
+            "BLUE": [
+                "긍정적인"
+            ],
+            "GREEN": [
+                "태평한"
+            ]
+        },
+        "ratio": [
+            [
+                "RED",
+                0.6
+            ],
+            [
+                "BLUE",
+                0.2
+            ],
+            [
+                "YELLOW",
+                0.1
+            ],
+            [
+                "GREEN",
+                0.1
+            ]
+        ],
+        "diary": {
+            "id": 8,
+            "title": "test is test3",
+            "content": "but test is not test3",
+            "createdAt": "2025-07-12T16:52:02.081Z",
+            "year": 2025,
+            "month": 7,
+            "day": 13
+        }
+    }
+    ```
+    
+
+# [ Post ]
+
+- 🔒로그인 `/auth/login`
+    
+    Request
+    
+    ```json
+    {
+      "email" : "korean1790@gmail.com",
+      "password" : "1234"
+    }
+    ```
+    
+    Response
+    
+    - 받은 accessToken은 요청할때 마다 Header > Bearer Token에 넣어주세요
+    
+    ```json
+    {
+        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJrb3JlYW4xNzkwQGdtYWlsLmNvbSIsIm5hbWUiOiLsnbTsnqztl4wiLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MTc5NjE2NiwiZXhwIjoxNzUxODEwNTY2fQ.8__MrfJ0oq20P2JU7YA2FhLMRdLVEE6NDtuudQA6i-8"
+    }
+    ```
+    
+- 🔒회원가입 `/auth/register`
+    
+    Request
+    
+    ```json
+    {
+      "email": "korean1790@gmail.com",
+      "name": "이재헌",
+      "password": "1234",
+      "mbti": "EF"
+      "provider": "google"
+    }
+    ```
+    
+    Response
+    
+    ```json
+    {
+        "email": "korean1790@gmail.com",
+        "name": "이재헌",
+        "password": "$2b$10$JJjOvn4ywstXRrT8v9WmpOY7dvGhAo4DEn5UuVXM/FIJwU4blEQTG",
+        "provider": "google",
+        "id": 6,
+        "mbti": "EF",
+        "role": "user",
+        "mory": {
+            "user": {
+                // 해당 유저에 대한 정보이므로 생략
+            },
+            "id": 2,
+            "growing": 0
+        }
+    }
+    ```
+    
+- 📕일기 생성 `/diary`
+    
+    같은 날 일기 있다면, 그날 일기의 내용을 수정하는 기능
+    
+    Request
+    
+    ```json
+    {
+      "title" : "test is test3",
+      "content" : "but test is not test3"
+    }
+    ```
+    
+    Response
+    
+    ```json
+    {
+        "title": "test is test3",
+        "content": "but test is not test3",
+        "month": 7,
+        "day": 13,
+        "user": {
+            "id": 6,
+            "name": "이재헌",
+            "email": "korean1790@gmail.com",
+            "password": "1234",
+            "mbti": "EF",
+            "provider": "google",
+            "role": "user",
+            "diaries": []
+        },
+        "id": 8,
+        "createdAt": "2025-07-12T16:52:02.081Z",
+        "year": 2025
+    }
+    ```
+    
+- 📊분석 결과 생성 `/analysis/gpt`
+    
+    이미 분석 결과가 존재한다면, 새로운 분석 결과로 덮어 씀
+    
+    Response
+    
+    ```json
+    {
+      "diaryId": 9
+    }
+    ```
+    
+    Request
+    
+    ```json
+    {
+        "id": 4,
+        "primary_emotion_type": "YELLOW",
+        "feel": {
+            "RED": [],
+            "YELLOW": [
+                "울적했다",
+                "무거웠다"
+            ],
+            "BLUE": [
+                "웃을"
+            ],
+            "GREEN": []
+        },
+        "ratio": {
+            "RED": 0,
+            "YELLOW": 0.5,
+            "BLUE": 0.25,
+            "GREEN": 0.25
+        },
+        "diary": {
+            "id": 9,
+            "title": "아무런 일기",
+            "content": "오늘은 괜히 기분이 울적했다.햇살은 좋았지만 마음은 어쩐지 무거웠다.학교에서 친구들과 얘기를 나누긴 했지만, 자꾸 딴 생각이 났다. 그래도 집에 와서 강아지가 반겨줘서 조금은 웃을 수 있었다. 이런 날은 그냥 일찍 자는 게 좋을 것 같다.",
+            "createdAt": "2025-07-26T05:43:59.203Z",
+            "year": 2025,
+            "month": 7,
+            "day": 26
+        }
+    }
+    ```
+    
+
+# [ Patch ]
+
+- 🔒계정 정보 수정 `/auth`
+    
+    Request
+    
+    ```json
+    {
+      "name": "이재헌22",
+    }
+    ```
+    
+    Response
+    
+    ```json
+    {
+        "generatedMaps": [],
+        "raw": [],
+        "affected": 1
+    }
+    ```
+    
+- 🔒Mory 상태 수정 → 미완 `/auth/mory`
+- 📕일기 수정 `/diary/:id`
+    
+    Request
+    
+    ```json
+    {
+      "title" : "test is not test T.T",
+      "content" : "but test is test"
+    }
+    ```
+    
+    Response
+    
+    ```json
+    {
+        "generatedMaps": [],
+        "raw": [],
+        "affected": 1
+    }
+    ```
+    
+
+# [ Delete ]
+
+- 🔒회원탈퇴 `/auth/me`
+    
+    ```json
+    {
+        "raw": [],
+        "affected": 1
+    }
+    ```

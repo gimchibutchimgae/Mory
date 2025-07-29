@@ -8,7 +8,10 @@
     "scheme": "mory",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    
+    "schemes": [
+      "mory"
+    ],
+    "owner": "kimchibuchimgae",
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -32,7 +35,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
@@ -42,7 +46,6 @@
       "eas": {
         "projectId": "0eef63eb-68fa-4df3-a163-eb9239e9e31c"
       }
-    },
-    "owner": "kimchibuchimgae"
+    }
   }
 }

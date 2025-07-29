@@ -9,7 +9,7 @@ import { Theme } from '@/constants/Themes';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, googleSignIn } = useAuth();
   const [autoLogin, setAutoLogin] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -38,12 +38,14 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      await signIn();
+      await signIn(username, password);
       router.replace('/(tabs)/');
     } catch (error) {
-      // 실제 로그인 실패 시 백엔드에서 오는 오류 메시지를 처리할 수 있습니다.
-      // 여기서는 일반적인 메시지를 표시합니다.
-      setPasswordError('이름 또는 비밀번호가 잘못되었습니다.');
+      if (error instanceof Error) {
+        setPasswordError(error.message);
+      } else {
+        setPasswordError('이름 또는 비밀번호가 잘못되었습니다.');
+      }
     } finally {
       setLoading(false);
     }
@@ -57,7 +59,7 @@ export default function LoginScreen() {
         resizeMode="contain"
       />
 
-      <InputWithIcon iconName="account" placeholder="아이디" value={username} onChangeText={setUsername} error={usernameError} />
+      <InputWithIcon iconName="account" placeholder="이메일" value={username} onChangeText={setUsername} error={usernameError} />
       <InputWithIcon iconName="lock" placeholder="비밀번호" secureTextEntry value={password} onChangeText={setPassword} error={passwordError} />
 
       <View style={styles.autoLoginContainer}>
@@ -79,8 +81,6 @@ export default function LoginScreen() {
         <Text style={styles.linkText}>아이디 찾기</Text>
         <Text style={styles.separator}>|</Text>
         <Text style={styles.linkText}>비밀번호 찾기</Text>
-        <Text style={styles.separator}>|</Text>
-        <Link href="/signup" style={styles.linkText}>회원가입</Link>
       </View>
 
       <View style={styles.dividerContainer}>
@@ -89,7 +89,7 @@ export default function LoginScreen() {
         <View style={styles.divider} />
       </View>
 
-      <GoogleSignInButton onPress={() => console.log('Google Sign In')} />
+      <GoogleSignInButton onPress={googleSignIn} />
     </View>
   );
 }

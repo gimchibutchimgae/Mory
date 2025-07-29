@@ -10,21 +10,32 @@ export default function SignUpScreen() {
   const router = useRouter();
   const { signUp } = useAuth();
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [nameError, setNameError] = useState<string | undefined>(undefined);
+  const [emailError, setEmailError] = useState<string | undefined>(undefined);
   const [passwordError, setPasswordError] = useState<string | undefined>(undefined);
   const [confirmPasswordError, setConfirmPasswordError] = useState<string | undefined>(undefined);
 
   const handleSignUp = async () => {
     let valid = true;
     setNameError(undefined);
+    setEmailError(undefined);
     setPasswordError(undefined);
     setConfirmPasswordError(undefined);
 
     if (!name) {
       setNameError('이름을 입력해주세요.');
+      valid = false;
+    }
+
+    if (!email) {
+      setEmailError('이메일을 입력해주세요.');
+      valid = false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      setEmailError('유효한 이메일 주소를 입력해주세요.');
       valid = false;
     }
 
@@ -50,12 +61,14 @@ export default function SignUpScreen() {
 
     setLoading(true);
     try {
-      await signUp();
+      await signUp(name, email, password);
       router.push('/initial-setup');
     } catch (error) {
-      // 실제 회원가입 실패 시 백엔드에서 오는 오류 메시지를 처리할 수 있습니다.
-      // 여기서는 일반적인 메시지를 표시합니다.
-      setPasswordError('회원가입에 실패했습니다. 다시 시도해주세요.');
+      if (error instanceof Error) {
+        setPasswordError(error.message);
+      } else {
+        setPasswordError('회원가입에 실패했습니다. 다시 시도해주세요.');
+      }
     } finally {
       setLoading(false);
     }
@@ -70,7 +83,10 @@ export default function SignUpScreen() {
       </View>
 
       <Text style={styles.label}>이름</Text>
-      <InputWithIcon placeholder="아이디를 입력하세요" value={name} onChangeText={setName} error={nameError} />
+      <InputWithIcon placeholder="이름을 입력하세요" value={name} onChangeText={setName} error={nameError} />
+
+      <Text style={styles.label}>이메일</Text>
+      <InputWithIcon placeholder="이메일을 입력하세요" value={email} onChangeText={setEmail} error={emailError} />
 
       <Text style={styles.label}>비밀번호</Text>
       <InputWithIcon placeholder="비밀번호를 입력하세요" secureTextEntry showEyeIcon value={password} onChangeText={setPassword} error={passwordError} />

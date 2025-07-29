@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, Button, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import ProgressBar from '@/components/ProgressBar';
 import BackButton from '@/components/BackButton';
 import CharacterSelection from '@/components/CharacterSelection';
-import { useAuth } from '@/app/context/AuthContext';
+import { useAuth } from '@/app/context/AuthContext.ts';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Themes } from '@/constants/Themes';
 
@@ -12,18 +12,40 @@ const TOTAL_STEPS = 4;
 
 export default function InitialSetupScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { updateProfile } = useAuth();
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [personality1, setPersonality1] = useState<'활발' | '소심' | null>(null);
   const [personality2, setPersonality2] = useState<'감성적' | '이성적' | null>(null);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < TOTAL_STEPS) {
       setStep(step + 1);
     } else {
-      signIn();
-      router.replace('/(tabs)/');
+      // 마지막 단계에서 MBTI 업데이트 및 홈 화면으로 이동
+      if (!personality1 || !personality2) {
+        Alert.alert('오류', '성격을 모두 선택해주세요.');
+        return;
+      }
+
+      let mbti = '';
+      if (personality1 === '활발' && personality2 === '감성적') {
+        mbti = 'EF';
+      } else if (personality1 === '활발' && personality2 === '이성적') {
+        mbti = 'ET';
+      } else if (personality1 === '소심' && personality2 === '감성적') {
+        mbti = 'IF';
+      } else if (personality1 === '소심' && personality2 === '이성적') {
+        mbti = 'IT';
+      }
+
+      try {
+        await updateProfile(mbti);
+        router.replace('/(tabs)/');
+      } catch (error) {
+        console.error('Failed to update profile:', error);
+        Alert.alert('오류', '프로필 업데이트에 실패했습니다. 다시 시도해주세요.');
+      }
     }
   };
 
