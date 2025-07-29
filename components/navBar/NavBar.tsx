@@ -1,34 +1,34 @@
-import { IconSvg } from '@/components/ui/IconPng';
-import { useRouter, useSegments } from 'expo-router';
+import { IconSvg } from '@/components/ui/IconSvg';
+import { usePathname, useRouter } from 'expo-router';
 import React from 'react';
 import * as S from './style';
 
-export function NaviBar() {
+export default function NavBar() {
   const router = useRouter();
-  const segments = useSegments();
-  const current = segments[segments.length - 1];
+  const pathname = usePathname();
 
   const tabs = [
-    { name: 'chart', label: '기록', icon: 'record' },
-    { name: '/', label: '홈', icon: 'home' }, // 홈은 '/'
-    { name: 'profile', label: '프로필', icon: 'profile' },
+    { name: 'chart', title: '기록', route: '/(tabs)/chart', icon: 'record' },
+    { name: 'index', title: '홈', route: '/(tabs)/', icon: 'home' },
+    { name: 'profile', title: '프로필', route: '/(tabs)/profile', icon: 'profile' },
   ];
 
   return (
     <S.Container>
-      {tabs.map(tab => {
-        const focused =
-          (tab.name === '/' && (current === 'index' || current === '')) ||
-          current === tab.name;
+      {tabs.map((tab) => {
+        const isActive = pathname.includes(tab.name) || (tab.name === 'index' && pathname === '/(tabs)');
+        
         return (
-          <S.TabButton
+          <S.TabButton 
             key={tab.name}
-            focused={!!focused}
-            onPress={() => router.navigate(tab.name)}
-            activeOpacity={0.8}
+            focused={isActive}
+            onPress={() => router.navigate(tab.route as any)}
           >
-            <IconSvg name={tab.icon as any} />
-            <S.Label focused={!!focused}>{tab.label}</S.Label>
+            <IconSvg 
+              name={tab.icon as any} 
+              color={isActive ? '#fff' : '#FFFFFF66'}
+            />
+            <S.Label focused={isActive}>{tab.title}</S.Label>
           </S.TabButton>
         );
       })}
