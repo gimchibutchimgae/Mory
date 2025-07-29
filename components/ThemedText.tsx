@@ -19,7 +19,7 @@ export function ThemedText({
         type === 'title' && styles.title,
         style,
       ]}
-      {...otherProps}
+      {...rest}
     />
   );
 }
