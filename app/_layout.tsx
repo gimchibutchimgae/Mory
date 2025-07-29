@@ -1,49 +1,34 @@
-import { NaviBar } from '@/components/navBar/NavBar';
-import * as Font from 'expo-font';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, TextProps, View } from 'react-native';
+import { useMemo, useState } from 'react';
 import 'react-native-reanimated';
 
+import { AuthContext } from '@/app/context/AuthContext';
+
 export default function RootLayout() {
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-
-  useEffect(() => {
-    Font.loadAsync({
-      Pretendard: require('../assets/fonts/PretendardVariable.ttf'),
-    }).then(() => setFontsLoaded(true));
-  }, []);
-
-  if (!loaded) {
-    return null;
-  }
-
-  if (!fontsLoaded) {
-    return <View style={{flex:1, justifyContent:'center', alignItems:'center'}}><ActivityIndicator /></View>;
-  }
+  const authContext = useMemo(
+    () => ({
+      signIn: () => {
+        setIsSignedIn(true);
+      },
+    }),
+    [],
+  );
 
   return (
-    <>
+    <AuthContext.Provider value={authContext}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {isSignedIn ? (
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        ) : (
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        )}
         <Stack.Screen name="+not-found" />
       </Stack>
       <NaviBar />
       <StatusBar style="auto" />
-    </>
-  );
-}
-
-export function ThemedText(props: TextProps) {
-  return (
-    <Text {...props} style={[{ fontFamily: 'Pretendard' }, props.style]}>
-      {props.children}
-    </Text>
+    </AuthContext.Provider>
   );
 }
