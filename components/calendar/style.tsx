@@ -5,8 +5,10 @@ const calendarStyles = StyleSheet.create({
     fontFamily: 'Pretendard',
     backgroundColor: '#14213d',
     flex: 1,
+    width: '100%',
     padding: 0,
-    borderRadius: 16,
+    borderRadius: 0,
+    alignItems: 'center', // 캘린더를 중앙에 정렬
   },
   dayContainer: {
     width: 40,

@@ -13,7 +13,7 @@ const gradientColors: Record<
   yellow: ['#FCDD63', '#FEB821'],
   green: ['#7AE9A0', '#4ED491'],
   blue: ['#85B7FC', '#748CFE'],
-  gray: ['#6D686880', '#6D686880'],
+  gray: ['#374553', '#374553'],
 };
 
 const today = new Date();
@@ -61,39 +61,18 @@ export default function MonthCalendar() {
 
   return (
     <View style={calendarStyles.container}>
-      {/* 테스트용 버튼 - 실제 구현시에는 제거 */}
-      <View style={{ padding: 10, alignItems: 'center' }}>
-        <TouchableOpacity
-          onPress={() => {
-            setHasTodayDiary(!hasTodayDiary);
-            // 랜덤으로 감정 상태 변경
-            const emotions: DayState[] = ['red', 'yellow', 'green', 'blue'];
-            setTodayEmotionState(emotions[Math.floor(Math.random() * emotions.length)]);
-          }}
-          style={{
-            backgroundColor: '#fff',
-            padding: 8,
-            borderRadius: 8,
-            marginBottom: 10
-          }}
-        >
-          <Text style={{ color: '#000', fontSize: 12 }}>
-            {hasTodayDiary ? '오늘 일기 삭제 (테스트)' : '오늘 일기 작성 (테스트)'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-      
-      <Calendar
-        current={todayString}
-        minDate={'1900-01-01'}
-        hideExtraDays={true}
-        monthFormat={'yyyy년 MM월'}
-        hideDayNames={false}
-        renderHeader={(date) => (
-          <Text style={{ color: '#fff', fontSize: 24, textAlign: 'center', marginVertical: 10 }}>
-            {date.getFullYear()}년 {String(date.getMonth() + 1).padStart(2, '0')}월
-          </Text>
-        )}
+      <View style={{ maxWidth: 400, width: '100%' }}>
+        <Calendar
+          current={todayString}
+          minDate={'1900-01-01'}
+          hideExtraDays={true}
+          monthFormat={'yyyy년 MM월'}
+          hideDayNames={false}
+          renderHeader={(date) => (
+            <Text style={{ color: '#fff', fontSize: 24, textAlign: 'center', marginTop: 40, marginBottom: 40 }}>
+              {date.getFullYear()}년 {String(date.getMonth() + 1).padStart(2, '0')}월
+            </Text>
+          )}
         dayComponent={({ date }) => {
           const dateString = date?.dateString;
           const dateObj = dateString ? new Date(dateString) : null;
@@ -159,6 +138,29 @@ export default function MonthCalendar() {
           arrowColor: '#fff',
         }}
       />
+      </View>
+      
+      {/* 테스트용 버튼 - 실제 구현시에는 제거 */}
+      <View style={{ padding: 10, alignItems: 'center' }}>
+        <TouchableOpacity
+          onPress={() => {
+            setHasTodayDiary(!hasTodayDiary);
+            // 랜덤으로 감정 상태 변경
+            const emotions: DayState[] = ['red', 'yellow', 'green', 'blue'];
+            setTodayEmotionState(emotions[Math.floor(Math.random() * emotions.length)]);
+          }}
+          style={{
+            backgroundColor: '#fff',
+            padding: 8,
+            borderRadius: 8,
+            marginBottom: 10
+          }}
+        >
+          <Text style={{ color: '#000', fontSize: 12 }}>
+            {hasTodayDiary ? '오늘 일기 삭제 (테스트)' : '오늘 일기 작성 (테스트)'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
