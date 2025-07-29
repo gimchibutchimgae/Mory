@@ -1,18 +1,19 @@
-import React, { useMemo } from 'react';
-import { Image, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useMemo, useState } from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import calendarStyles from './style';
 
-const dayImages: Record<
-  'red' | 'yellow' | 'green' | 'blue' | 'today' | 'gray',
-  any
+// 그라데이션 색상 정의
+const gradientColors: Record<
+  'red' | 'yellow' | 'green' | 'blue' | 'gray',
+  string[]
 > = {
-  red: require('../../assets/icons/daysRed.png'),
-  yellow: require('../../assets/icons/daysYellow.png'),
-  green: require('../../assets/icons/daysGreen.png'),
-  blue: require('../../assets/icons/daysBlue.png'),
-  today: require('../../assets/icons/daysToday.png'),
-  gray: require('../../assets/icons/daysGray.png'),
+  red: ['#FF7342', '#FE2C4D'],
+  yellow: ['#FCDD63', '#FEB821'],
+  green: ['#7AE9A0', '#4ED491'],
+  blue: ['#85B7FC', '#748CFE'],
+  gray: ['#6D686880', '#6D686880'],
 };
 
 const today = new Date();
@@ -52,9 +53,36 @@ const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 export default function MonthCalendar() {
   const julyRandomMap = useMemo<JulyRandomMap>(() => getJulyRandomMap(), []);
+  
+  // 오늘 일기 작성 여부 상태 (실제로는 API에서 가져올 데이터)
+  // TODO: 실제 구현시에는 props로 받거나 API에서 가져오도록 변경
+  const [hasTodayDiary, setHasTodayDiary] = useState(false); // false: 작성 안함, true: 작성 완료
+  const [todayEmotionState, setTodayEmotionState] = useState<DayState>('red'); // 오늘의 감정 상태
 
   return (
     <View style={calendarStyles.container}>
+      {/* 테스트용 버튼 - 실제 구현시에는 제거 */}
+      <View style={{ padding: 10, alignItems: 'center' }}>
+        <TouchableOpacity
+          onPress={() => {
+            setHasTodayDiary(!hasTodayDiary);
+            // 랜덤으로 감정 상태 변경
+            const emotions: DayState[] = ['red', 'yellow', 'green', 'blue'];
+            setTodayEmotionState(emotions[Math.floor(Math.random() * emotions.length)]);
+          }}
+          style={{
+            backgroundColor: '#fff',
+            padding: 8,
+            borderRadius: 8,
+            marginBottom: 10
+          }}
+        >
+          <Text style={{ color: '#000', fontSize: 12 }}>
+            {hasTodayDiary ? '오늘 일기 삭제 (테스트)' : '오늘 일기 작성 (테스트)'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      
       <Calendar
         current={todayString}
         minDate={'1900-01-01'}
@@ -75,37 +103,47 @@ export default function MonthCalendar() {
             dateString && new Date(dateString).setHours(0, 0, 0, 0) > today.setHours(0, 0, 0, 0);
           const isToday = dateString === todayString;
 
-          let imageSource = null;
-          let imageStyle = calendarStyles.dayImage;
+          let gradientColor = gradientColors.gray;
 
           if (isToday) {
-            imageSource = dayImages.today;
-            imageStyle = calendarStyles.todayImage;
+            // 오늘 날짜 처리
+            if (hasTodayDiary) {
+              // 일기를 작성한 경우: 감정 분석 결과에 따른 색상
+              gradientColor = gradientColors[todayEmotionState];
+            } else {
+              // 일기를 작성하지 않은 경우: 회색
+              gradientColor = gradientColors.gray;
+            }
           } else if (isFuture) {
-            imageSource = dayImages.gray;
-            imageStyle = calendarStyles.dayImage;
+            gradientColor = gradientColors.gray;
           } else if (isPast && dateObj && dateObj.getMonth() === 6) {
             const state: DayState = julyRandomMap[dateString] || 'yellow';
-            imageSource = dayImages[state];
-            imageStyle = calendarStyles.dayImage;
+            gradientColor = gradientColors[state];
           } else if (isPast) {
-            imageSource = dayImages.gray;
-            imageStyle = calendarStyles.dayImage;
+            gradientColor = gradientColors.gray;
           }
 
           return (
             <View style={calendarStyles.dayContainer}>
-              {imageSource && (
-                <Image source={imageSource} style={imageStyle} resizeMode="contain" />
-              )}
-              <Text
-                style={[
-                  calendarStyles.dayText,
-                  isToday && calendarStyles.todayText,
-                ]}
+              <LinearGradient
+                colors={gradientColor as any}
+                style={calendarStyles.gradientBackground} // 모든 날짜 동일한 크기
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
               >
-                {date?.day}
-              </Text>
+                <Text
+                  style={[
+                    calendarStyles.dayText,
+                    isToday && calendarStyles.todayText,
+                    // 배경색에 따라 글자색 적용
+                    gradientColor === gradientColors.gray 
+                      ? { color: 'rgba(115, 115, 115, 0.70)' } 
+                      : { color: '#000000' }
+                  ]}
+                >
+                  {date?.day}
+                </Text>
+              </LinearGradient>
             </View>
           );
         }}
