@@ -1,10 +1,21 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import * as S from '@/components/ui/StyledScreen';
+import { useRouter } from 'expo-router';
+import { Image, TouchableOpacity } from 'react-native';
 
-export default function ProfileScreen() {
+export const options = { headerShown: false };
+
+export default function HomeScreen() {
+  const router = useRouter();
+
   return (
-    <ThemedView style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <ThemedText type="title">홈</ThemedText>
-    </ThemedView>
+    <S.ScreenContainer>
+      <S.ScreenTitle>홈</S.ScreenTitle>
+      <TouchableOpacity onPress={() => router.navigate('/(tabs)/calendar')}>
+        <Image
+          source={require('@/assets/icons/calendar.png')}
+          style={{ width: 48, height: 48, marginTop: 24 }}
+        />
+      </TouchableOpacity>
+    </S.ScreenContainer>
   );
 }

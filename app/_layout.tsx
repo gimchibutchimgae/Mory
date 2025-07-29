@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useMemo, useState } from 'react';
 import 'react-native-reanimated';
-import { useState, useMemo } from 'react';
 
 import { AuthContext } from '@/app/context/AuthContext';
 
@@ -27,6 +27,7 @@ export default function RootLayout() {
         )}
         <Stack.Screen name="+not-found" />
       </Stack>
+      <NaviBar />
       <StatusBar style="auto" />
     </AuthContext.Provider>
   );
