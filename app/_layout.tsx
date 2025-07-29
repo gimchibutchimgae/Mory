@@ -72,7 +72,7 @@ export default function RootLayout() {
       } else if (res.data.status === 'register') {
         // 회원가입이 필요한 경우, 추가 정보 입력 페이지로 이동하거나 처리
         console.log('User needs to register:', res.data.value);
-        // 예: router.push('/(auth)/signup', { params: { email: res.data.value.email, name: res.data.value.name, provider: res.data.value.provider } });
+        
       }
     } catch (error) {
       console.error('Google sign-in to server failed:', error);
