@@ -10,7 +10,7 @@ export default function HomeScreen() {
   return (
     <S.ScreenContainer>
       <S.ScreenTitle>홈</S.ScreenTitle>
-      <TouchableOpacity onPress={() => router.navigate('/(tabs)/calendar')}>
+      <TouchableOpacity onPress={() => router.push('/(calendar)/calendar')}>
         <Image
           source={require('@/assets/icons/calendar.png')}
           style={{ width: 48, height: 48, marginTop: 24 }}
