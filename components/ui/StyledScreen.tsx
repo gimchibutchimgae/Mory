@@ -4,8 +4,7 @@ export const ScreenContainer = styled.View`
   flex: 1;
   align-items: center;
   justify-content: flex-start;
-  background-color: #14213d;
-  padding-top: 20px;
+  background-color: #003B68;
 `;
 
 export const ScreenTitle = styled.Text`
