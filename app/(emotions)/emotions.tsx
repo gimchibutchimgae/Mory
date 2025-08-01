@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export const options = { headerShown: false };
 
@@ -24,10 +24,10 @@ export default function EmotionsScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-          <Text style={styles.closeButtonText}>×</Text>
+          <Image source={require('@/assets/icons/backIcon.svg')} style={styles.buttonIcon} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.searchButton}>
-          <Text style={styles.searchButtonText}>🔍</Text>
+          <Image source={require('@/assets/icons/searchIcon.svg')} style={styles.buttonIcon} />
         </TouchableOpacity>
       </View>
 
@@ -77,19 +77,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  closeButtonText: {
-    color: '#FFFFFF',
-    fontSize: 30,
-    fontWeight: '300',
-  },
   searchButton: {
     width: 40,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  searchButtonText: {
-    fontSize: 20,
+  buttonIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
   },
   content: {
     flex: 1,
