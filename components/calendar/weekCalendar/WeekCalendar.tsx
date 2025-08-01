@@ -157,15 +157,22 @@ export default function WeekCalendar({
             gradientColor = gradientColors[weekDataMap[dateString]];
           }
           
+          // 과거/오늘 날짜에 데이터가 없을 때 색상 처리
+          if (isPastOrToday && gradientColor === gradientColors.gray) {
+            gradientColor = ['#E8E8E880', '#E8E8E880'];
+          }
+          
           // 요일 텍스트 색상 계산
-          const weekdayColor = isPastOrToday && weekDataMap[dateString] && gradientColor !== gradientColors.gray 
-            ? '#ffffff' 
-            : '#736F6FB2';
+          let weekdayColor = '#ffffff';
+          if (!isPastOrToday) {
+            weekdayColor = '#736F6FB2';
+          }
           
           // 날짜 텍스트 색상 계산
-          const dateTextColor = gradientColor === gradientColors.gray 
-            ? '#737373B2' 
-            : '#000000';
+          let dateTextColor = '#000000';
+          if (!isPastOrToday) {
+            dateTextColor = '#737373B2';
+          }
           
           return (
             <S.DayContainer key={dateString}>
