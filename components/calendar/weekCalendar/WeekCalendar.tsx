@@ -1,7 +1,8 @@
-import { LinearGradient } from 'expo-linear-gradient';
+import { IconSvg } from '@/components/ui/IconSvg';
+import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
-import { Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import * as S from './style';
 
 // MonthCalendar에서 가져온 그라데이션 색상 정의
 const gradientColors: Record<
@@ -99,6 +100,7 @@ export default function WeekCalendar({
   weekNumber = 1,
   useCurrentWeek = true // 기본값을 true로 설정
 }: WeekCalendarProps) {
+  const router = useRouter();
   const today = new Date();
   const todayString = today.toISOString().split('T')[0];
   
@@ -128,29 +130,21 @@ export default function WeekCalendar({
   }, [today, useCurrentWeek, year, month]);
 
   return (
-    <View style={{
-      backgroundColor: '#14213d',
-      paddingHorizontal: 20,
-      paddingVertical: 20,
-    }}>
-      {/* 헤더 - 년월 표시 */}
-      <Text style={{
-        color: '#fff',
-        fontSize: 24,
-        textAlign: 'center',
-        marginBottom: 20,
-        fontFamily: 'Pretendard',
-      }}>
-        {currentWeekInfo.year}년 {currentWeekInfo.month}월
-      </Text>
+    <S.WeekCalendarContainer>
+      {/* 헤더 - 년월 표시와 캘린더 아이콘 */}
+      <S.HeaderContainer>
+        <S.YearMonthText>
+          {currentWeekInfo.year}년 {currentWeekInfo.month}월
+        </S.YearMonthText>
+        
+        {/* 캘린더 아이콘 - 우측 상단 */}
+        <S.CalendarIconButton onPress={() => router.push('/(calendar)/calendar')}>
+          <IconSvg name="calendar" size={27} color="#FFFFFF" />
+        </S.CalendarIconButton>
+      </S.HeaderContainer>
       
       {/* 주간 캘린더 */}
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        paddingHorizontal: 5,
-      }}>
+      <S.WeekContainer>
         {weekDates.map((dateString, index) => {
           const date = new Date(dateString);
           const dayNumber = date.getDate();
@@ -163,84 +157,58 @@ export default function WeekCalendar({
             gradientColor = gradientColors[weekDataMap[dateString]];
           }
           
+          // 요일 텍스트 색상 계산
+          const weekdayColor = isPastOrToday && weekDataMap[dateString] && gradientColor !== gradientColors.gray 
+            ? '#ffffff' 
+            : '#736F6FB2';
+          
+          // 날짜 텍스트 색상 계산
+          const dateTextColor = gradientColor === gradientColors.gray 
+            ? '#737373B2' 
+            : '#000000';
+          
           return (
-            <View key={dateString} style={{ 
-              alignItems: 'center',
-              marginHorizontal: 9,
-              paddingHorizontal: 3,
-              borderRadius: 25,
-              // 오늘 날짜일 때 외곽 테두리 추가
-              ...(isToday && {
-                borderWidth: 3,
-                borderColor: '#1D6AA1',
-                backgroundColor: '#1D6AA1',
-                shadowColor: '#1D6AA1',
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 8,
-              })
-            }}>
-              {/* 요일 표시 */}
-              <Text style={{
-                color: isPastOrToday && weekDataMap[dateString] && gradientColor !== gradientColors.gray 
-                  ? '#ffffff' 
-                  : '#736F6FB2',
-                fontSize: 16,
-                fontFamily: 'Pretendard',
-                lineHeight: 40,
-                fontWeight: '500',
-              }}>
-                {WEEKDAYS[index]}
-              </Text>
+            <S.DayContainer key={dateString}>
+              {/* 오늘 표시 SVG - 파란색 배경 뒤로 */}
+              {isToday && (
+                <S.SvgContainer top={-18} left={-7} zIndex={1}>
+                  <TodayMorySvg size={40} />
+                </S.SvgContainer>
+              )}
               
-              {/* 날짜 원형 */}
-              <View style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                overflow: 'hidden',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                marginBottom: 2,
-              }}>
-                <LinearGradient
-                  colors={gradientColor as [string, string]}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text style={{
-                    color: gradientColor === gradientColors.gray 
-                      ? '#737373B2' 
-                      : '#000000',
-                    fontSize: 16,
-                    fontWeight: 'bold',
-                    fontFamily: 'Pretendard',
-                  }}>
-                    {dayNumber}
-                  </Text>
-                </LinearGradient>
+              {/* 파란색 배경이 있는 컨테이너 */}
+              <S.BlueBgContainer 
+                isToday={isToday}
+                borderWidth={3}
+                borderColor="#1D6AA1"
+                backgroundColor="#1D6AA1"
+                shadowColor="#1D6AA1"
+                shadowOffsetX={0}
+                shadowOffsetY={0}
+                shadowOpacity={0.3}
+                shadowRadius={8}
+                elevation={8}
+              >
+                {/* 요일 표시 */}
+                <S.WeekdayText color={weekdayColor}>
+                  {WEEKDAYS[index]}
+                </S.WeekdayText>
                 
-                {/* 오늘 표시 */}
-                {isToday && (
-                  <View style={{
-                    position: 'absolute',
-                    top: -8,
-                    right: -8,
-                  }}>
-                    <TodayMorySvg size={16} />
-                  </View>
-                )}
-              </View>
-            </View>
+                {/* 날짜 원형 */}
+                <S.DateCircleContainer>
+                  <S.GradientBackground
+                    colors={gradientColor as [string, string]}
+                  >
+                    <S.DateText color={dateTextColor}>
+                      {dayNumber}
+                    </S.DateText>
+                  </S.GradientBackground>
+                </S.DateCircleContainer>
+              </S.BlueBgContainer>
+            </S.DayContainer>
           );
         })}
-      </View>
-    </View>
+      </S.WeekContainer>
+    </S.WeekCalendarContainer>
   );
 }
