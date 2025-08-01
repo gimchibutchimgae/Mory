@@ -1,3 +1,4 @@
+import SpeechBubble from '@/components/ui/SpeechBubble/SpeechBubble';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -82,48 +83,6 @@ const WriteSvg = ({ size = 24 }: { size?: number }) => (
       fill="#001F3D"
     />
   </Svg>
-);
-
-// 말풍선 컴포넌트
-const SpeechBubble = ({ message }: { message: string }) => (
-  <View style={{
-    position: 'absolute',
-    bottom: 110,
-    right: 20,
-    backgroundColor: '#6B7280',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 20,
-    maxWidth: 200,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  }}>
-    <Text style={{
-      color: '#FFFFFF',
-      fontSize: 14,
-      fontFamily: 'Pretendard',
-      textAlign: 'center'
-    }}>
-      {message}
-    </Text>
-    {/* 말풍선 꼬리 */}
-    <View style={{
-      position: 'absolute',
-      bottom: -8,
-      right: 20,
-      width: 0,
-      height: 0,
-      borderLeftWidth: 8,
-      borderRightWidth: 8,
-      borderTopWidth: 8,
-      borderLeftColor: 'transparent',
-      borderRightColor: 'transparent',
-      borderTopColor: '#6B7280',
-    }} />
-  </View>
 );
 
 export default function MonthCalendar() {
