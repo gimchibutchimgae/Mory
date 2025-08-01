@@ -7,6 +7,7 @@ export const WeekCalendarContainer = styled.View`
   padding-horizontal: 20px;
   padding-vertical: 20px;
   position: relative;
+  max-width: 503px;
 `;
 
 // 헤더 컨테이너
