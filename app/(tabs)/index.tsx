@@ -48,7 +48,7 @@ export default function HomeScreen() {
               alignItems: 'center',
             }}
           >
-            <S.EmotionButton>
+            <S.EmotionButton onPress={() => router.push('/(emotions)/emotions')}>
               <S.EmotionButtonIcon source={require('@/assets/icons/info.svg')} />
               <S.EmotionButtonText>
                 감정{'\n'}둘러보기
