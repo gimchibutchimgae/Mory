@@ -2,7 +2,7 @@ import WeekCalendar from '@/components/calendar/weekCalendar/WeekCalendar';
 import * as S from '@/components/ui/StyledScreen';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { ScrollView, View } from 'react-native';
+import { Image, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const options = { headerShown: false };
@@ -23,20 +23,22 @@ export default function HomeScreen() {
             colors={['#14213d', '#1e3a5f', '#003B68']}
             style={{
               flex: 1,
-              minHeight: 100,
+              minHeight: 400,
               width: '100%',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
+            {/* 메인 SVG 이미지 */}
+            <Image 
+              source={require('@/assets/icons/mainMory.svg')}
+              style={{
+                width: 200,
+                height: 200,
+                resizeMode: 'contain',
+              }}
+            />
           </LinearGradient>
-          <View
-            style={{
-              backgroundColor: '#003B68',
-              minHeight: '100%',
-              width: '100%',
-            }}
-          >
-
-          </View>
         </S.ScreenContainer>
       </ScrollView>
     </SafeAreaView>
