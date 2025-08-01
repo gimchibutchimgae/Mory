@@ -57,7 +57,7 @@ export default function HomeScreen() {
             <S.MainMoryContainer>
               <S.MainMoryBlurBackground backgroundColor={blurBackgroundColor} />
               <S.MainMory 
-                source={require('@/assets/images/mainMory.svg')}
+                source={require('@/assets/images/mory_initial.png')}
               />
               <S.MainMoryShadow 
                 source={require('@/assets/images/mainMoryShadow.svg')}
