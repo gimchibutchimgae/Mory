@@ -1,4 +1,4 @@
-import MonthCalendar from '@/components/calendar/MonthCalendar';
+import MonthCalendar from '@/components/calendar/monthCalendar/MonthCalendar';
 import * as S from '@/components/ui/StyledScreen';
 
 export const options = { headerShown: false };
