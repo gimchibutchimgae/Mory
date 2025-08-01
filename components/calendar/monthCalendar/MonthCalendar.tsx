@@ -17,9 +17,6 @@ const gradientColors: Record<
   gray: ['#374553', '#374553'],
 };
 
-const today = new Date();
-const todayString = today.toISOString().split('T')[0];
-
 LocaleConfig.locales['ko'] = {
   monthNames: [
     '1월', '2월', '3월', '4월', '5월', '6월',
@@ -36,21 +33,36 @@ LocaleConfig.locales['ko'] = {
 LocaleConfig.defaultLocale = 'ko';
 
 type DayState = 'gray' | 'red' | 'yellow' | 'green' | 'blue';
-type JulyRandomMap = { [date: string]: DayState };
+type EmotionDataMap = { [date: string]: DayState };
 function getRandomState(): DayState {
   const states: DayState[] = ['gray', 'red', 'yellow', 'green', 'blue'];
   return states[Math.floor(Math.random() * states.length)];
 }
-function getJulyRandomMap(): JulyRandomMap {
-  const map: JulyRandomMap = {};
-  for (let d = 1; d <= 31; d++) {
-    const date = `2024-07-${d.toString().padStart(2, '0')}`;
+
+// 특정 년월의 모든 날짜에 대한 랜덤 감정 데이터 생성
+function getMonthEmotionMap(year: number, month: number): EmotionDataMap {
+  const map: EmotionDataMap = {};
+  const daysInMonth = new Date(year, month, 0).getDate(); // 해당 월의 일수
+  
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = `${year}-${month.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
     map[date] = getRandomState();
   }
   return map;
 }
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+// 한국 시간대(KST) 기준 오늘 날짜 가져오기
+function getKSTToday(): Date {
+  const now = new Date();
+  const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return kstDate;
+}
+
+function getKSTTodayString(): string {
+  return getKSTToday().toISOString().split('T')[0];
+}
 
 // 오늘 표시용 SVG 컴포넌트
 const TodayMorySvg = ({ size = 16 }: { size?: number }) => (
@@ -115,7 +127,15 @@ const SpeechBubble = ({ message }: { message: string }) => (
 );
 
 export default function MonthCalendar() {
-  const julyRandomMap = useMemo<JulyRandomMap>(() => getJulyRandomMap(), []);
+  // KST 기준으로 오늘 날짜 계산
+  const today = getKSTToday();
+  const todayString = getKSTTodayString();
+  
+  // 현재 월의 감정 데이터 생성
+  const currentMonth = today.getMonth() + 1; // 1-12
+  const currentYear = today.getFullYear();
+  const monthEmotionMap = useMemo<EmotionDataMap>(() => 
+    getMonthEmotionMap(currentYear, currentMonth), [currentYear, currentMonth]);
   
   // 오늘 일기 작성 여부 상태 (실제로는 API에서 가져올 데이터)
   // TODO: 실제 구현시에는 props로 받거나 API에서 가져오도록 변경
@@ -139,10 +159,11 @@ export default function MonthCalendar() {
         dayComponent={({ date }) => {
           const dateString = date?.dateString;
           const dateObj = dateString ? new Date(dateString) : null;
+          const kstToday = getKSTToday();
           const isPast =
-            dateString && new Date(dateString).setHours(0, 0, 0, 0) < today.setHours(0, 0, 0, 0);
+            dateString && new Date(dateString).setHours(0, 0, 0, 0) < kstToday.setHours(0, 0, 0, 0);
           const isFuture =
-            dateString && new Date(dateString).setHours(0, 0, 0, 0) > today.setHours(0, 0, 0, 0);
+            dateString && new Date(dateString).setHours(0, 0, 0, 0) > kstToday.setHours(0, 0, 0, 0);
           const isToday = dateString === todayString;
 
           let gradientColor = gradientColors.gray;
@@ -158,8 +179,9 @@ export default function MonthCalendar() {
             }
           } else if (isFuture) {
             gradientColor = gradientColors.gray;
-          } else if (isPast && dateObj && dateObj.getMonth() === 6) {
-            const state: DayState = julyRandomMap[dateString] || 'yellow';
+          } else if (isPast && dateObj && dateObj.getMonth() === currentMonth - 1) {
+            // 과거 날짜이면서 현재 월인 경우
+            const state: DayState = monthEmotionMap[dateString] || 'yellow';
             gradientColor = gradientColors[state];
           } else if (isPast) {
             gradientColor = gradientColors.gray;
