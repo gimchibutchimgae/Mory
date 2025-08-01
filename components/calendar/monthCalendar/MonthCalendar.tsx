@@ -122,26 +122,42 @@ export default function MonthCalendar() {
           const isFuture =
             dateString && new Date(dateString).setHours(0, 0, 0, 0) > kstToday.setHours(0, 0, 0, 0);
           const isToday = dateString === todayString;
+          const isPastOrToday = isPast || isToday;
 
           let gradientColor = gradientColors.gray;
+          let textColor = '#000000';
 
           if (isToday) {
             // 오늘 날짜 처리
             if (hasTodayDiary) {
               // 일기를 작성한 경우: 감정 분석 결과에 따른 색상
               gradientColor = gradientColors[todayEmotionState];
+              textColor = '#000000';
             } else {
-              // 일기를 작성하지 않은 경우: 회색
-              gradientColor = gradientColors.gray;
+              // 일기를 작성하지 않은 경우: 연한 회색
+              gradientColor = ['#748593', '#748593'];
+              textColor = '#000000';
             }
           } else if (isFuture) {
+            // 미래 날짜: 기존 회색 디자인 유지
             gradientColor = gradientColors.gray;
+            textColor = 'rgba(115, 115, 115, 0.70)';
           } else if (isPast && dateObj && dateObj.getMonth() === currentMonth - 1) {
             // 과거 날짜이면서 현재 월인 경우
-            const state: DayState = monthEmotionMap[dateString] || 'yellow';
-            gradientColor = gradientColors[state];
+            const state: DayState = monthEmotionMap[dateString] || null;
+            if (state && state !== 'gray') {
+              // 감정 데이터가 있는 경우
+              gradientColor = gradientColors[state];
+              textColor = '#000000';
+            } else {
+              // 감정 데이터가 없는 과거 날짜: 연한 회색
+              gradientColor = ['#748593', '#748593'];
+              textColor = '#000000';
+            }
           } else if (isPast) {
-            gradientColor = gradientColors.gray;
+            // 다른 월의 과거 날짜
+            gradientColor = ['#748593', '#748593'];
+            textColor = '#000000';
           }
 
           return (
@@ -153,11 +169,7 @@ export default function MonthCalendar() {
               >
                 <S.DayText
                   isToday={isToday}
-                  textColor={
-                    gradientColor === gradientColors.gray 
-                      ? 'rgba(115, 115, 115, 0.70)' 
-                      : '#000000'
-                  }
+                  textColor={textColor}
                 >
                   {date?.day}
                 </S.DayText>
