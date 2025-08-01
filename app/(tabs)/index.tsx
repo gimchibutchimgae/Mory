@@ -1,4 +1,5 @@
 import WeekCalendar from '@/components/calendar/weekCalendar/WeekCalendar';
+import SpeechBubble from '@/components/ui/SpeechBubble/SpeechBubble';
 import * as S from '@/components/ui/StyledScreen';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -55,6 +56,13 @@ export default function HomeScreen() {
               </S.EmotionButtonText>
             </S.EmotionButton>
             <S.MainMoryContainer>
+              {(!todayEmotionState || todayEmotionState === 'gray') && (
+                <SpeechBubble 
+                  message="오늘 하루 어땠어?" 
+                  position={{ top: 30, left: 20 }}
+                  theme="home"
+                />
+              )}
               <S.MainMoryBlurBackground backgroundColor={blurBackgroundColor} />
               <S.MainMory 
                 source={require('@/assets/images/mory_initial.png')}

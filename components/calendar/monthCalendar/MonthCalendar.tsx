@@ -1,9 +1,8 @@
-import { LinearGradient } from 'expo-linear-gradient';
+import SpeechBubble from '@/components/ui/SpeechBubble/SpeechBubble';
 import React, { useMemo, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import Svg, { Path } from 'react-native-svg';
-import calendarStyles from './style';
+import * as S from './style';
 
 // 그라데이션 색상 정의
 const gradientColors: Record<
@@ -16,9 +15,6 @@ const gradientColors: Record<
   blue: ['#85B7FC', '#748CFE'],
   gray: ['#374553', '#374553'],
 };
-
-const today = new Date();
-const todayString = today.toISOString().split('T')[0];
 
 LocaleConfig.locales['ko'] = {
   monthNames: [
@@ -36,21 +32,36 @@ LocaleConfig.locales['ko'] = {
 LocaleConfig.defaultLocale = 'ko';
 
 type DayState = 'gray' | 'red' | 'yellow' | 'green' | 'blue';
-type JulyRandomMap = { [date: string]: DayState };
+type EmotionDataMap = { [date: string]: DayState };
 function getRandomState(): DayState {
   const states: DayState[] = ['gray', 'red', 'yellow', 'green', 'blue'];
   return states[Math.floor(Math.random() * states.length)];
 }
-function getJulyRandomMap(): JulyRandomMap {
-  const map: JulyRandomMap = {};
-  for (let d = 1; d <= 31; d++) {
-    const date = `2024-07-${d.toString().padStart(2, '0')}`;
+
+// 특정 년월의 모든 날짜에 대한 랜덤 감정 데이터 생성
+function getMonthEmotionMap(year: number, month: number): EmotionDataMap {
+  const map: EmotionDataMap = {};
+  const daysInMonth = new Date(year, month, 0).getDate(); // 해당 월의 일수
+  
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = `${year}-${month.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
     map[date] = getRandomState();
   }
   return map;
 }
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+// 한국 시간대(KST) 기준 오늘 날짜 가져오기
+function getKSTToday(): Date {
+  const now = new Date();
+  const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return kstDate;
+}
+
+function getKSTTodayString(): string {
+  return getKSTToday().toISOString().split('T')[0];
+}
 
 // 오늘 표시용 SVG 컴포넌트
 const TodayMorySvg = ({ size = 16 }: { size?: number }) => (
@@ -72,50 +83,16 @@ const WriteSvg = ({ size = 24 }: { size?: number }) => (
   </Svg>
 );
 
-// 말풍선 컴포넌트
-const SpeechBubble = ({ message }: { message: string }) => (
-  <View style={{
-    position: 'absolute',
-    bottom: 110,
-    right: 20,
-    backgroundColor: '#6B7280',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 20,
-    maxWidth: 200,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  }}>
-    <Text style={{
-      color: '#FFFFFF',
-      fontSize: 14,
-      fontFamily: 'Pretendard',
-      textAlign: 'center'
-    }}>
-      {message}
-    </Text>
-    {/* 말풍선 꼬리 */}
-    <View style={{
-      position: 'absolute',
-      bottom: -8,
-      right: 20,
-      width: 0,
-      height: 0,
-      borderLeftWidth: 8,
-      borderRightWidth: 8,
-      borderTopWidth: 8,
-      borderLeftColor: 'transparent',
-      borderRightColor: 'transparent',
-      borderTopColor: '#6B7280',
-    }} />
-  </View>
-);
-
 export default function MonthCalendar() {
-  const julyRandomMap = useMemo<JulyRandomMap>(() => getJulyRandomMap(), []);
+  // KST 기준으로 오늘 날짜 계산
+  const today = getKSTToday();
+  const todayString = getKSTTodayString();
+  
+  // 현재 월의 감정 데이터 생성
+  const currentMonth = today.getMonth() + 1; // 1-12
+  const currentYear = today.getFullYear();
+  const monthEmotionMap = useMemo<EmotionDataMap>(() => 
+    getMonthEmotionMap(currentYear, currentMonth), [currentYear, currentMonth]);
   
   // 오늘 일기 작성 여부 상태 (실제로는 API에서 가져올 데이터)
   // TODO: 실제 구현시에는 props로 받거나 API에서 가져오도록 변경
@@ -123,8 +100,8 @@ export default function MonthCalendar() {
   const [todayEmotionState, setTodayEmotionState] = useState<DayState>('red'); // 오늘의 감정 상태
 
   return (
-    <View style={calendarStyles.container}>
-      <View style={{ maxWidth: 400, width: '100%' }}>
+    <S.Container>
+      <S.CalendarWrapper>
         <Calendar
           current={todayString}
           minDate={'1900-01-01'}
@@ -132,73 +109,79 @@ export default function MonthCalendar() {
           monthFormat={'yyyy년 MM월'}
           hideDayNames={false}
           renderHeader={(date) => (
-            <Text style={{ color: '#fff', fontSize: 24, textAlign: 'center', marginTop: 40, marginBottom: 40 }}>
+            <S.HeaderText>
               {date.getFullYear()}년 {String(date.getMonth() + 1).padStart(2, '0')}월
-            </Text>
+            </S.HeaderText>
           )}
         dayComponent={({ date }) => {
           const dateString = date?.dateString;
           const dateObj = dateString ? new Date(dateString) : null;
+          const kstToday = getKSTToday();
           const isPast =
-            dateString && new Date(dateString).setHours(0, 0, 0, 0) < today.setHours(0, 0, 0, 0);
+            dateString && new Date(dateString).setHours(0, 0, 0, 0) < kstToday.setHours(0, 0, 0, 0);
           const isFuture =
-            dateString && new Date(dateString).setHours(0, 0, 0, 0) > today.setHours(0, 0, 0, 0);
+            dateString && new Date(dateString).setHours(0, 0, 0, 0) > kstToday.setHours(0, 0, 0, 0);
           const isToday = dateString === todayString;
+          const isPastOrToday = isPast || isToday;
 
           let gradientColor = gradientColors.gray;
+          let textColor = '#000000';
 
           if (isToday) {
             // 오늘 날짜 처리
             if (hasTodayDiary) {
               // 일기를 작성한 경우: 감정 분석 결과에 따른 색상
               gradientColor = gradientColors[todayEmotionState];
+              textColor = '#000000';
             } else {
-              // 일기를 작성하지 않은 경우: 회색
-              gradientColor = gradientColors.gray;
+              // 일기를 작성하지 않은 경우: 연한 회색
+              gradientColor = ['#748593', '#748593'];
+              textColor = '#000000';
             }
           } else if (isFuture) {
+            // 미래 날짜: 기존 회색 디자인 유지
             gradientColor = gradientColors.gray;
-          } else if (isPast && dateObj && dateObj.getMonth() === 6) {
-            const state: DayState = julyRandomMap[dateString] || 'yellow';
-            gradientColor = gradientColors[state];
+            textColor = 'rgba(115, 115, 115, 0.70)';
+          } else if (isPast && dateObj && dateObj.getMonth() === currentMonth - 1) {
+            // 과거 날짜이면서 현재 월인 경우
+            const state: DayState = monthEmotionMap[dateString] || null;
+            if (state && state !== 'gray') {
+              // 감정 데이터가 있는 경우
+              gradientColor = gradientColors[state];
+              textColor = '#000000';
+            } else {
+              // 감정 데이터가 없는 과거 날짜: 연한 회색
+              gradientColor = ['#748593', '#748593'];
+              textColor = '#000000';
+            }
           } else if (isPast) {
-            gradientColor = gradientColors.gray;
+            // 다른 월의 과거 날짜
+            gradientColor = ['#748593', '#748593'];
+            textColor = '#000000';
           }
 
           return (
-            <View style={calendarStyles.dayContainer}>
-              <LinearGradient
+            <S.DayContainer>
+              <S.GradientBackground
                 colors={gradientColor as any}
-                style={calendarStyles.gradientBackground} // 모든 날짜 동일한 크기
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <Text
-                  style={[
-                    calendarStyles.dayText,
-                    isToday && calendarStyles.todayText,
-                    // 배경색에 따라 글자색 적용
-                    gradientColor === gradientColors.gray 
-                      ? { color: 'rgba(115, 115, 115, 0.70)' } 
-                      : { color: '#000000' }
-                  ]}
+                <S.DayText
+                  isToday={isToday}
+                  textColor={textColor}
                 >
                   {date?.day}
-                </Text>
-              </LinearGradient>
+                </S.DayText>
+              </S.GradientBackground>
               
               {/* 오늘 날짜에만 별 아이콘 표시 */}
               {isToday && (
-                <View style={{
-                  position: 'absolute',
-                  top: 2,
-                  left: -7,
-                  zIndex: -1
-                }}>
+                <S.TodaySvgContainer>
                   <TodayMorySvg size={33} />
-                </View>
+                </S.TodaySvgContainer>
               )}
-            </View>
+            </S.DayContainer>
           );
         }}
         theme={{
@@ -213,7 +196,7 @@ export default function MonthCalendar() {
           arrowColor: '#fff',
         }}
       />
-      </View>
+      </S.CalendarWrapper>
       
       {/* 말풍선 - 오늘 일기를 작성하지 않았을 때만 표시 */}
       {!hasTodayDiary && (
@@ -221,32 +204,16 @@ export default function MonthCalendar() {
       )}
       
       {/* 테스트용 버튼 - 실제 구현시에는 제거 */}
-      <TouchableOpacity
+      <S.WriteButton
         onPress={() => {
           setHasTodayDiary(!hasTodayDiary);
           // 랜덤으로 감정 상태 변경
           const emotions: DayState[] = ['red', 'yellow', 'green', 'blue'];
           setTodayEmotionState(emotions[Math.floor(Math.random() * emotions.length)]);
         }}
-        style={{
-          position: 'absolute',
-          bottom: 30,
-          right: 30,
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          width: 63,
-          height: 63,
-          borderRadius: 30,
-          alignItems: 'center',
-          justifyContent: 'center',
-          shadowColor: '#000',
-          shadowOffset: { width: 4, height: 4 },
-          shadowOpacity: 0.25,
-          shadowRadius: 2,
-          elevation: 5,
-        }}
       >
         <WriteSvg size={20} />
-      </TouchableOpacity>
-    </View>
+      </S.WriteButton>
+    </S.Container>
   );
 }

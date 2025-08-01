@@ -21,6 +21,17 @@ type WeekDataMap = { [date: string]: DayState };
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
+// 한국 시간대(KST) 기준 오늘 날짜 가져오기
+function getKSTToday(): Date {
+  const now = new Date();
+  const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return kstDate;
+}
+
+function getKSTTodayString(): string {
+  return getKSTToday().toISOString().split('T')[0];
+}
+
 // 오늘 표시용 SVG 컴포넌트 (MonthCalendar에서 가져옴)
 const TodayMorySvg = ({ size = 16 }: { size?: number }) => (
   <Svg width={size} height={size} viewBox="0 0 35 34" fill="none">
@@ -61,7 +72,7 @@ function getWeekDates(year: number, month: number, weekNumber: number): string[]
 
 // 오늘이 포함된 주간의 날짜들을 가져오는 함수
 function getCurrentWeekDates(): string[] {
-  const today = new Date();
+  const today = getKSTToday();
   const dayOfWeek = today.getDay(); // 0: 일요일, 1: 월요일, ...
   
   // 이번 주 일요일 계산
@@ -103,8 +114,8 @@ export default function WeekCalendar({
   onTodayEmotionChange
 }: WeekCalendarProps) {
   const router = useRouter();
-  const today = new Date();
-  const todayString = today.toISOString().split('T')[0];
+  const today = getKSTToday();
+  const todayString = getKSTTodayString();
   
   // 해당 주의 날짜들 계산
   const weekDates = useMemo(() => {
@@ -129,15 +140,16 @@ export default function WeekCalendar({
   // 현재 주간의 년월 정보 계산
   const currentWeekInfo = useMemo(() => {
     if (useCurrentWeek) {
-      // 오늘 날짜 기준으로 년월 표시
+      // KST 기준 오늘 날짜로 년월 표시
+      const kstToday = getKSTToday();
       return {
-        year: today.getFullYear(),
-        month: today.getMonth() + 1
+        year: kstToday.getFullYear(),
+        month: kstToday.getMonth() + 1
       };
     } else {
       return { year, month };
     }
-  }, [today, useCurrentWeek, year, month]);
+  }, [useCurrentWeek, year, month]);
 
   return (
     <S.WeekCalendarContainer>
@@ -159,7 +171,7 @@ export default function WeekCalendar({
           const date = new Date(dateString);
           const dayNumber = date.getDate();
           const isToday = dateString === todayString;
-          const isPastOrToday = new Date(dateString).setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0);
+          const isPastOrToday = new Date(dateString).setHours(0, 0, 0, 0) <= getKSTToday().setHours(0, 0, 0, 0);
           
           // 감정 상태에 따른 그라데이션 색상
           let gradientColor = gradientColors.gray;
