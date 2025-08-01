@@ -1,18 +1,17 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, TouchableOpacity, StyleSheet, Image, ImageSourcePropType } from 'react-native';
 import { Colors } from '@/constants/Colors';
 
 interface CharacterSelectionProps {
-  label: string;
   onPress: () => void;
   isSelected: boolean;
+  image: ImageSourcePropType;
 }
 
 export default function CharacterSelection({
-  label,
   onPress,
   isSelected,
+  image,
 }: CharacterSelectionProps) {
   return (
     <TouchableOpacity onPress={onPress} style={styles.container}>
@@ -22,9 +21,8 @@ export default function CharacterSelection({
           isSelected ? styles.selectedCircle : null,
         ]}
       >
-        <MaterialCommunityIcons name="star" size={60} color={isSelected ? Colors.yellow : Colors.white} />
+        <Image source={image} style={styles.image} />
       </View>
-      <Text style={styles.labelText}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -35,21 +33,21 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   characterCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: Colors.secondaryBackground,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
+    backgroundColor: 'transparent',
   },
   selectedCircle: {
-    borderColor: Colors.yellow,
+    backgroundColor: Colors.secondaryBackground
   },
-  labelText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: Colors.white,
+  image: {
+    width: 120,
+    height: 120,
+    resizeMode: 'contain',
   },
 });
