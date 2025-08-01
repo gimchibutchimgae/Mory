@@ -14,7 +14,7 @@ export const HeaderContainer = styled.View`
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   position: relative;
 `;
 
@@ -118,7 +118,7 @@ export const GradientBackground = styled(LinearGradient)`
 // 날짜 텍스트
 export const DateText = styled.Text<{ color: string }>`
   color: ${props => props.color};
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 500;
   font-family: 'Pretendard';
 `;
