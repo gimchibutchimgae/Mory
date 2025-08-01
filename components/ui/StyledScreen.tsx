@@ -64,11 +64,11 @@ export const MainMoryBlurBackground = styled.View<{ backgroundColor?: string }>`
 `;
 
 export const MainMory = styled.Image`
-  width: 200px;
-  height: 200px;
+  width: 400px;
+  height: 400px;
   resize-mode: contain;
   z-index: 1;
-  margin-bottom: 45px;
+  margin-top: 80px;
 `;
 
 export const MainMoryShadow = styled.Image`

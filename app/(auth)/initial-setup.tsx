@@ -1,14 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, Button, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, Button, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
 import ProgressBar from '@/components/ProgressBar';
 import BackButton from '@/components/BackButton';
 import CharacterSelection from '@/components/CharacterSelection';
 import { useAuth } from '@/app/context/AuthContext';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 
 export default function InitialSetupScreen() {
   const router = useRouter();
@@ -59,50 +58,44 @@ export default function InitialSetupScreen() {
           <Text style={styles.label}>너는 어느 쪽에 가까워?</Text>
           <View style={styles.characterSelectionContainer}>
             <CharacterSelection
-              label="활발"
               onPress={() => setPersonality1('활발')}
               isSelected={personality1 === '활발'}
+              image={require('@/assets/images/emotion_active.png')}
             />
             <CharacterSelection
-              label="소심"
               onPress={() => setPersonality1('소심')}
               isSelected={personality1 === '소심'}
+              image={require('@/assets/images/emotion_intimidate.png')}
+            />
+          </View>
+          <View style={{ height: 40 }} />
+          <Text style={styles.label}>너는 어느 쪽에 가까워?</Text>
+          <View style={styles.characterSelectionContainer}>
+            <CharacterSelection
+              onPress={() => setPersonality2('감성적')}
+              isSelected={personality2 === '감성적'}
+              image={require('@/assets/images/ideology_emotional.png')}
+            />
+            <CharacterSelection
+              onPress={() => setPersonality2('이성적')}
+              isSelected={personality2 === '이성적'}
+              image={require('@/assets/images/ideology_reasoning.png')}
             />
           </View>
         </View>
       )}
 
       {step === 3 && (
-        <View style={styles.stepContent}>
-          <Text style={styles.stepTitle}>성격</Text>
-          <Text style={styles.stepSubtitle}>너의 성격을 알려줘</Text>
-          <Text style={styles.label}>너는 어느 쪽에 가까워?</Text>
-          <View style={styles.characterSelectionContainer}>
-            <CharacterSelection
-              label="감성적"
-              onPress={() => setPersonality2('감성적')}
-              isSelected={personality2 === '감성적'}
-            />
-            <CharacterSelection
-              label="이성적"
-              onPress={() => setPersonality2('이성적')}
-              isSelected={personality2 === '이성적'}
-            />
-          </View>
-        </View>
-      )}
-
-      {step === 4 && (
-        <View style={styles.stepContent}>
-          <Text style={styles.stepTitle}>너의 감정을 가지고</Text>
-          <Text style={styles.stepSubtitle}>모리가 어떤 모습으로 성장할까</Text>
-          <Text style={styles.label}>감정 일기 시작해보자</Text>
-          <MaterialCommunityIcons name="star-circle" size={150} color={Colors.white} style={styles.characterPlaceholder} />
+        <View style={styles.stepContentFinal}>
+          <Text style={[styles.finalText, styles.alignLeft]}>너의 감정을 가지고</Text>
+          <Text style={[styles.finalText, styles.alignRight]}>모리가 어떤 모습으로 성장할까</Text>
+          <Text style={[styles.finalText, styles.alignLeft]}>감정 일기 시작해보자</Text>
+          <Image source={require('@/assets/images/mory_initial.png')} style={styles.characterPlaceholder} />
         </View>
       )}
 
       <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-        <Text style={styles.nextButtonText}>{step === TOTAL_STEPS ? 'Finish' : 'Next'}</Text>
+        <Text style={styles.nextButtonText}>{step === TOTAL_STEPS ? '시작하기' : '다음으로'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -127,16 +120,47 @@ const styles = StyleSheet.create({
   },
   stepContent: {
     flex: 1,
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
     paddingHorizontal: 20,
+  },
+  stepContentFinal: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    width: '100%',
+    paddingHorizontal: 20,
+    paddingTop: 60, // 상단 여백 추가
   },
   stepTitle: {
     fontSize: 28,
     fontWeight: 'bold',
     color: Colors.white,
     marginBottom: 10,
+  },
+  finalText: {
+    fontSize: 20,
+    color: Colors.white,
+    fontWeight: '500',
+    textAlign: 'center',
+    alignSelf: 'center',
+    marginBottom: 18, // 줄 간격 조정
+  },
+  alignLeft: {
+    alignSelf: 'flex-start',
+    textAlign: 'left',
+    width: '100%',
+  },
+  alignCenter: {
+    alignSelf: 'center',
+    textAlign: 'center',
+    width: '100%',
+  },
+  alignRight: {
+    alignSelf: 'flex-end',
+    textAlign: 'right',
+    width: '100%',
   },
   stepSubtitle: {
     fontSize: 18,
@@ -147,6 +171,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.white,
     marginBottom: 10,
+    alignSelf: 'flex-start',
   },
   input: {
     height: 50,
@@ -177,6 +202,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   characterPlaceholder: {
+    width: 400,
+    height: 400,
+    resizeMode: 'contain',
     marginTop: 50,
   },
 });
