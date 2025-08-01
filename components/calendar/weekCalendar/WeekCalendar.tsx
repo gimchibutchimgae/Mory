@@ -92,13 +92,15 @@ interface WeekCalendarProps {
   month?: number;
   weekNumber?: number; // 1: 첫 번째 주, 2: 두 번째 주, ...
   useCurrentWeek?: boolean; // true: 오늘이 포함된 주간 사용, false: 지정된 년월/주차 사용
+  onTodayEmotionChange?: (emotion: DayState | null) => void; // 오늘의 감정 상태 콜백
 }
 
 export default function WeekCalendar({ 
   year = new Date().getFullYear(), 
   month = new Date().getMonth() + 1, 
   weekNumber = 1,
-  useCurrentWeek = true // 기본값을 true로 설정
+  useCurrentWeek = true, // 기본값을 true로 설정
+  onTodayEmotionChange
 }: WeekCalendarProps) {
   const router = useRouter();
   const today = new Date();
@@ -115,6 +117,14 @@ export default function WeekCalendar({
   
   // 주간 감정 데이터
   const weekDataMap = useMemo(() => getWeekDataMap(weekDates), [weekDates]);
+  
+  // 오늘의 감정 상태를 부모 컴포넌트에 전달
+  const todayEmotion = weekDataMap[todayString] || null;
+  React.useEffect(() => {
+    if (onTodayEmotionChange) {
+      onTodayEmotionChange(todayEmotion);
+    }
+  }, [todayEmotion, onTodayEmotionChange]);
 
   // 현재 주간의 년월 정보 계산
   const currentWeekInfo = useMemo(() => {
