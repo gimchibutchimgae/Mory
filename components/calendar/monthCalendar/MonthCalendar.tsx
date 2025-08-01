@@ -1,10 +1,8 @@
 import SpeechBubble from '@/components/ui/SpeechBubble/SpeechBubble';
-import { LinearGradient } from 'expo-linear-gradient';
 import React, { useMemo, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import Svg, { Path } from 'react-native-svg';
-import calendarStyles from './style';
+import * as S from './style';
 
 // 그라데이션 색상 정의
 const gradientColors: Record<
@@ -102,8 +100,8 @@ export default function MonthCalendar() {
   const [todayEmotionState, setTodayEmotionState] = useState<DayState>('red'); // 오늘의 감정 상태
 
   return (
-    <View style={calendarStyles.container}>
-      <View style={{ maxWidth: 400, width: '100%' }}>
+    <S.Container>
+      <S.CalendarWrapper>
         <Calendar
           current={todayString}
           minDate={'1900-01-01'}
@@ -111,9 +109,9 @@ export default function MonthCalendar() {
           monthFormat={'yyyy년 MM월'}
           hideDayNames={false}
           renderHeader={(date) => (
-            <Text style={{ color: '#fff', fontSize: 24, textAlign: 'center', marginTop: 40, marginBottom: 40 }}>
+            <S.HeaderText>
               {date.getFullYear()}년 {String(date.getMonth() + 1).padStart(2, '0')}월
-            </Text>
+            </S.HeaderText>
           )}
         dayComponent={({ date }) => {
           const dateString = date?.dateString;
@@ -147,39 +145,31 @@ export default function MonthCalendar() {
           }
 
           return (
-            <View style={calendarStyles.dayContainer}>
-              <LinearGradient
+            <S.DayContainer>
+              <S.GradientBackground
                 colors={gradientColor as any}
-                style={calendarStyles.gradientBackground} // 모든 날짜 동일한 크기
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <Text
-                  style={[
-                    calendarStyles.dayText,
-                    isToday && calendarStyles.todayText,
-                    // 배경색에 따라 글자색 적용
+                <S.DayText
+                  isToday={isToday}
+                  textColor={
                     gradientColor === gradientColors.gray 
-                      ? { color: 'rgba(115, 115, 115, 0.70)' } 
-                      : { color: '#000000' }
-                  ]}
+                      ? 'rgba(115, 115, 115, 0.70)' 
+                      : '#000000'
+                  }
                 >
                   {date?.day}
-                </Text>
-              </LinearGradient>
+                </S.DayText>
+              </S.GradientBackground>
               
               {/* 오늘 날짜에만 별 아이콘 표시 */}
               {isToday && (
-                <View style={{
-                  position: 'absolute',
-                  top: 2,
-                  left: -7,
-                  zIndex: -1
-                }}>
+                <S.TodaySvgContainer>
                   <TodayMorySvg size={33} />
-                </View>
+                </S.TodaySvgContainer>
               )}
-            </View>
+            </S.DayContainer>
           );
         }}
         theme={{
@@ -194,7 +184,7 @@ export default function MonthCalendar() {
           arrowColor: '#fff',
         }}
       />
-      </View>
+      </S.CalendarWrapper>
       
       {/* 말풍선 - 오늘 일기를 작성하지 않았을 때만 표시 */}
       {!hasTodayDiary && (
@@ -202,32 +192,16 @@ export default function MonthCalendar() {
       )}
       
       {/* 테스트용 버튼 - 실제 구현시에는 제거 */}
-      <TouchableOpacity
+      <S.WriteButton
         onPress={() => {
           setHasTodayDiary(!hasTodayDiary);
           // 랜덤으로 감정 상태 변경
           const emotions: DayState[] = ['red', 'yellow', 'green', 'blue'];
           setTodayEmotionState(emotions[Math.floor(Math.random() * emotions.length)]);
         }}
-        style={{
-          position: 'absolute',
-          bottom: 30,
-          right: 30,
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          width: 63,
-          height: 63,
-          borderRadius: 30,
-          alignItems: 'center',
-          justifyContent: 'center',
-          shadowColor: '#000',
-          shadowOffset: { width: 4, height: 4 },
-          shadowOpacity: 0.25,
-          shadowRadius: 2,
-          elevation: 5,
-        }}
       >
         <WriteSvg size={20} />
-      </TouchableOpacity>
-    </View>
+      </S.WriteButton>
+    </S.Container>
   );
 }
