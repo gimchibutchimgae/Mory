@@ -1,137 +1,54 @@
-import { LinearGradient } from 'expo-linear-gradient';
+import * as S from '@/components/ui/EmotionStyle';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export const options = { headerShown: false };
 
-const emotions = [
-  { id: 1, name: '활력 높음', color: ['#FF7342', '#FE2C4D'] as const, category: 'red' },
-  { id: 2, name: '활력 높음', color: ['#FCDD63', '#FEB821'] as const, category: 'yellow' },
-  { id: 3, name: '활력 낮음', color: ['#85B7FC', '#748CFE'] as const, category: 'blue' },
-  { id: 4, name: '활력 낮음', color: ['#7AE9A0', '#4ED491'] as const, category: 'green' },
+const emotions: S.EmotionType[] = [
+  { id: 1, name: '활력 높음', color: ['#FF7342', '#FE2C4D'] as const },
+  { id: 2, name: '활력 높음', color: ['#FCDD63', '#FEB821'] as const },
+  { id: 3, name: '활력 낮음', color: ['#85B7FC', '#748CFE'] as const },
+  { id: 4, name: '활력 낮음', color: ['#7AE9A0', '#4ED491'] as const },
 ];
 
 export default function EmotionsScreen() {
   const router = useRouter();
 
-  const handleEmotionSelect = (emotion: any) => {
+  const handleEmotionSelect = (emotion: S.EmotionType) => {
     // 다음 화면으로 이동하는 로직 (나중에 구현)
     console.log('Selected emotion:', emotion);
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
-          <Image source={require('@/assets/icons/backIcon.svg')} style={styles.buttonIcon} />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.searchButton}>
-          <Image source={require('@/assets/icons/searchIcon.svg')} style={styles.buttonIcon} />
-        </TouchableOpacity>
-      </View>
+    <S.Container>
+      <S.Header>
+        <S.CloseButton onPress={() => router.back()}>
+          <S.ButtonIcon source={require('@/assets/icons/backIcon.svg')} />
+        </S.CloseButton>
+        <S.SearchButton>
+          <S.ButtonIcon source={require('@/assets/icons/searchIcon.svg')} />
+        </S.SearchButton>
+      </S.Header>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>
+      <S.Content>
+        <S.Title>
           다양한 감정을 선택하여{'\n'}살펴보아요
-        </Text>
+        </S.Title>
 
-        <View style={styles.emotionGrid}>
+        <S.EmotionGrid>
           {emotions.map((emotion) => (
-            <TouchableOpacity
+            <S.EmotionButton
               key={emotion.id}
-              style={styles.emotionButton}
               onPress={() => handleEmotionSelect(emotion)}
             >
-              <LinearGradient
-                colors={emotion.color}
-                style={styles.emotionCircle}
-              >
-                <Text style={styles.emotionTitle}>{emotion.name.split(' ')[0]}</Text>
-                <Text style={styles.emotionSubtitle}>{emotion.name.split(' ')[1]}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
+              <S.EmotionCircle colors={emotion.color}>
+                <S.EmotionTitle>{emotion.name.split(' ')[0]}</S.EmotionTitle>
+                <S.EmotionSubtitle>{emotion.name.split(' ')[1]}</S.EmotionSubtitle>
+              </S.EmotionCircle>
+            </S.EmotionButton>
           ))}
-        </View>
-      </View>
-    </SafeAreaView>
+        </S.EmotionGrid>
+      </S.Content>
+    </S.Container>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-  },
-  closeButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonIcon: {
-    width: 24,
-    height: 24,
-    resizeMode: 'contain',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 40,
-    justifyContent: 'center',
-  },
-  title: {
-    color: '#FFFFFF',
-    fontSize: 24,
-    fontFamily: 'Pretendard',
-    textAlign: 'center',
-    marginBottom: 60,
-    lineHeight: 32,
-  },
-  emotionGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-  },
-  emotionButton: {
-    width: '45%',
-    marginBottom: 30,
-    alignItems: 'center',
-  },
-  emotionCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emotionTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: 'Pretendard',
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  emotionSubtitle: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontFamily: 'Pretendard',
-    fontWeight: '400',
-    textAlign: 'center',
-    marginTop: 2,
-  },
-});
