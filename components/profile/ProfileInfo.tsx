@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 
 interface ProfileInfoProps {
@@ -11,8 +12,8 @@ interface ProfileInfoProps {
 export default function ProfileInfo({ user }: ProfileInfoProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.name}>{user.name}</Text>
-      <Text style={styles.email}>{user.email}</Text>
+      <ThemedText style={styles.name}>{user.name}</ThemedText>
+      <ThemedText style={styles.email}>{user.email}</ThemedText>
     </View>
   );
 }

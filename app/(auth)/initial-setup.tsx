@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View, Text, Button, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Button, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import { ThemedText } from '@/components/ThemedText';
 import ProgressBar from '@/components/ProgressBar';
 import BackButton from '@/components/BackButton';
 import CharacterSelection from '@/components/CharacterSelection';
@@ -32,15 +33,15 @@ export default function InitialSetupScreen() {
       <ProgressBar currentStep={step} totalSteps={TOTAL_STEPS} />
       <View style={styles.header}>
         <BackButton />
-        <Text style={styles.title}>Initial Setup</Text>
+        <ThemedText style={styles.title}>Initial Setup</ThemedText>
         <View style={{ width: 24 }} />{/* Placeholder for alignment */}
       </View>
 
       {step === 1 && (
         <View style={styles.stepContent}>
-          <Text style={styles.stepTitle}>이름</Text>
-          <Text style={styles.stepSubtitle}>내가 부를 너의 이름을 알려줘</Text>
-          <Text style={styles.label}>나의 이름은</Text>
+          <ThemedText style={styles.stepTitle}>이름</ThemedText>
+          <ThemedText style={styles.stepSubtitle}>내가 부를 너의 이름을 알려줘</ThemedText>
+          <ThemedText style={styles.label}>나의 이름은</ThemedText>
           <TextInput
             style={styles.input}
             placeholder="이름을 입력하세요"
@@ -53,9 +54,9 @@ export default function InitialSetupScreen() {
 
       {step === 2 && (
         <View style={styles.stepContent}>
-          <Text style={styles.stepTitle}>성격</Text>
-          <Text style={styles.stepSubtitle}>너의 성격을 알려줘</Text>
-          <Text style={styles.label}>너는 어느 쪽에 가까워?</Text>
+          <ThemedText style={styles.stepTitle}>성격</ThemedText>
+          <ThemedText style={styles.stepSubtitle}>너의 성격을 알려줘</ThemedText>
+          <ThemedText style={styles.label}>너는 어느 쪽에 가까워?</ThemedText>
           <View style={styles.characterSelectionContainer}>
             <CharacterSelection
               onPress={() => setPersonality1('활발')}
@@ -69,7 +70,7 @@ export default function InitialSetupScreen() {
             />
           </View>
           <View style={{ height: 40 }} />
-          <Text style={styles.label}>너는 어느 쪽에 가까워?</Text>
+          <ThemedText style={styles.label}>너는 어느 쪽에 가까워?</ThemedText>
           <View style={styles.characterSelectionContainer}>
             <CharacterSelection
               onPress={() => setPersonality2('감성적')}
@@ -87,15 +88,15 @@ export default function InitialSetupScreen() {
 
       {step === 3 && (
         <View style={styles.stepContentFinal}>
-          <Text style={[styles.finalText, styles.alignLeft]}>너의 감정을 가지고</Text>
-          <Text style={[styles.finalText, styles.alignRight]}>모리가 어떤 모습으로 성장할까</Text>
-          <Text style={[styles.finalText, styles.alignLeft]}>감정 일기 시작해보자</Text>
+          <ThemedText style={[styles.finalText, styles.alignLeft]}>너의 감정을 가지고</ThemedText>
+          <ThemedText style={[styles.finalText, styles.alignRight]}>모리가 어떤 모습으로 성장할까</ThemedText>
+          <ThemedText style={[styles.finalText, styles.alignLeft]}>감정 일기 시작해보자</ThemedText>
           <Image source={require('@/assets/images/mory_initial.png')} style={styles.characterPlaceholder} />
         </View>
       )}
 
       <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-        <Text style={styles.nextButtonText}>{step === TOTAL_STEPS ? '시작하기' : '다음으로'}</Text>
+        <ThemedText style={styles.nextButtonText}>{step === TOTAL_STEPS ? '시작하기' : '다음으로'}</ThemedText>
       </TouchableOpacity>
     </View>
   );

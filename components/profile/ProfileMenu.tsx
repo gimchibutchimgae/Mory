@@ -1,20 +1,21 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 
 export default function ProfileMenu({ onLogout, onWithdraw }: any) {
   return (
     <View style={styles.menuContainer}>
       <View style={styles.menuItem}>
-        <Text style={styles.menuText}>성격</Text>
-        <Text style={styles.infoValue}>활발하고 감성적</Text>
+        <ThemedText style={styles.menuText}>성격</ThemedText>
+        <ThemedText style={styles.infoValue}>활발하고 감성적</ThemedText>
       </View>
       <TouchableOpacity style={styles.menuItem} onPress={onLogout}>
-        <Text style={styles.menuText}>로그아웃</Text>
-        <Text style={styles.arrow}>{'>'}</Text>
+        <ThemedText style={styles.menuText}>로그아웃</ThemedText>
+        <ThemedText style={styles.arrow}>{'>'}</ThemedText>
       </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem} onPress={onWithdraw}>
-        <Text style={styles.withdrawText}>회원탈퇴</Text>
-        <Text style={styles.arrow}>{'>'}</Text>
+        <ThemedText style={styles.withdrawText}>회원탈퇴</ThemedText>
+        <ThemedText style={styles.arrow}>{'>'}</ThemedText>
       </TouchableOpacity>
     </View>
   );

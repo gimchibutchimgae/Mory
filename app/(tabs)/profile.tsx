@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import ProfileInfo from '@/components/profile/ProfileInfo';
 import ProfileMenu from '@/components/profile/ProfileMenu';
 import { FontAwesome } from '@expo/vector-icons';
+import { ThemedText } from '@/components/ThemedText';
 
 export const options = { headerShown: false };
 
@@ -16,7 +17,7 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>프로필</Text>
+      <ThemedText style={styles.title}>프로필</ThemedText>
       <View style={styles.avatarContainer}>
         <ProfileAvatar />
       </View>

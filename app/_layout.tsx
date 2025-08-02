@@ -5,6 +5,7 @@ import 'react-native-reanimated';
 import { useFonts } from 'expo-font';
 
 import { AuthContext } from '@/app/context/AuthContext';
+import { UserProvider } from '@/app/context/UserContext';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -40,18 +41,21 @@ export default function RootLayout() {
 
   return (
     <AuthContext.Provider value={authContext}>
-      <Stack>
-        {isSignedIn ? (
-          <>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="(calendar)" options={{ headerShown: false }} />
-          </>
-        ) : (
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        )}
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
+      <UserProvider>
+        <Stack>
+          {isSignedIn ? (
+            <>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(calendar)" options={{ headerShown: false }} />
+            </>
+          ) : (
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          )}
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="auto" />
+      </UserProvider>
     </AuthContext.Provider>
   );
 }
+
