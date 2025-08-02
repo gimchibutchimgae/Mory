@@ -16,7 +16,12 @@ export function ThemedText({
   return (
     <Text
       style={[
+        { fontFamily: 'Pretendard' },
+        type === 'default' && styles.default,
         type === 'title' && styles.title,
+        type === 'defaultSemiBold' && styles.defaultSemiBold,
+        type === 'subtitle' && styles.subtitle,
+        type === 'link' && styles.link,
         style,
       ]}
       {...rest}
@@ -25,13 +30,28 @@ export function ThemedText({
 }
 
 const styles = StyleSheet.create({
+  default: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: '400',
+  },
+  defaultSemiBold: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: '600',
+  },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  subtitle: {
+    fontSize: 18,
+    fontWeight: '400',
   },
   link: {
     lineHeight: 30,
     fontSize: 16,
     color: Colors.yellow, // 링크 색상을 yellow로 설정
+    fontWeight: '400',
   },
 });

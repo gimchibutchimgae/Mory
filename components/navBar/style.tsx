@@ -3,9 +3,10 @@ import styled from 'styled-components/native';
 export const Container = styled.View`
   flex-direction: row;
   background-color: #00274e;
-  height: 60px;
+  height: 90px;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
+  paddingHorizontal: 60px;
 `;
 
 export const TabButton = styled.TouchableOpacity<{ focused: boolean }>`
