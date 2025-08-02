@@ -27,6 +27,7 @@ export default function NavBar() {
             <IconSvg 
               name={tab.icon as any} 
               color={isActive ? '#fff' : '#FFFFFF66'}
+              size={33.6}
             />
             <S.Label focused={isActive}>{tab.title}</S.Label>
           </S.TabButton>
