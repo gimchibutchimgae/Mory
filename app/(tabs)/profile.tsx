@@ -6,11 +6,13 @@ import ProfileMenu from '@/components/profile/ProfileMenu';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { useUser } from '@/app/context/UserContext';
+import { useAuth } from '@/app/context/AuthContext';
 
 export const options = { headerShown: false };
 
 export default function ProfileScreen() {
   const { userName, userPersonality1, userPersonality2 } = useUser();
+  const { signOut, deleteAccount } = useAuth();
 
   // 임시 데이터 (UserContext에서 가져온 데이터로 대체)
   const user = {
@@ -19,13 +21,11 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    // 로그아웃 로직
-    console.log('로그아웃');
+    signOut();
   };
 
-  const handleWithdraw = () => {
-    // 회원탈퇴 로직
-    console.log('회원탈퇴');
+  const handleWithdraw = async () => {
+    await deleteAccount();
   };
 
   return (
@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 32,
     flex: 1,
+    marginTop: 20,
   },
   editButton: {
     position: 'absolute',

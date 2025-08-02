@@ -2,6 +2,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface ProfileMenuProps {
   userPersonality1: '활발' | '소심' | null;
@@ -32,11 +33,11 @@ export default function ProfileMenu({ userPersonality1, userPersonality2, onLogo
       </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem} onPress={onLogout}>
         <ThemedText style={styles.menuText}>로그아웃</ThemedText>
-        <ThemedText style={styles.arrow}>{'>'}</ThemedText>
+        <MaterialCommunityIcons name="chevron-right" size={24} color={Colors.lightGray} />
       </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem} onPress={onWithdraw}>
         <ThemedText style={styles.withdrawText}>회원탈퇴</ThemedText>
-        <ThemedText style={styles.arrow}>{'>'}</ThemedText>
+        <MaterialCommunityIcons name="chevron-right" size={24} color={Colors.lightGray} />
       </TouchableOpacity>
     </View>
   );
@@ -69,10 +70,5 @@ const styles = StyleSheet.create({
   withdrawText: {
     color: '#FF5A5A',
     fontSize: 16,
-  },
-  arrow: {
-    color: '#B0B8C1',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
 });

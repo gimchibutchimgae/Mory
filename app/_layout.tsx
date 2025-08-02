@@ -1,17 +1,16 @@
 import { Stack, SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { useFonts } from 'expo-font';
 
-import { AuthContext } from '@/app/context/AuthContext';
+import { AuthProvider, useAuth } from '@/app/context/AuthContext';
 import { UserProvider } from '@/app/context/UserContext';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [isSignedIn, setIsSignedIn] = useState(false);
   const [loaded, error] = useFonts({
     'Pretendard': require('../assets/fonts/PretendardVariable.ttf'),
   });
@@ -26,36 +25,35 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  const authContext = useMemo(
-    () => ({
-      signIn: () => {
-        setIsSignedIn(true);
-      },
-    }),
-    [],
-  );
-
   if (!loaded) {
     return null;
   }
 
   return (
-    <AuthContext.Provider value={authContext}>
+    <AuthProvider>
       <UserProvider>
-        <Stack>
-          {isSignedIn ? (
-            <>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="(calendar)" options={{ headerShown: false }} />
-            </>
-          ) : (
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          )}
-          <Stack.Screen name="+not-found" />
-        </Stack>
+        <RootLayoutNav />
         <StatusBar style="auto" />
       </UserProvider>
-    </AuthContext.Provider>
+    </AuthProvider>
+  );
+}
+
+function RootLayoutNav() {
+  const { token } = useAuth();
+
+  return (
+    <Stack>
+      {token ? (
+        <>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(calendar)" options={{ headerShown: false }} />
+        </>
+      ) : (
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      )}
+      <Stack.Screen name="+not-found" />
+    </Stack>
   );
 }
 
