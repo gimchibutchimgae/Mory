@@ -5,14 +5,27 @@ import ProfileInfo from '@/components/profile/ProfileInfo';
 import ProfileMenu from '@/components/profile/ProfileMenu';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
+import { useUser } from '@/app/context/UserContext';
 
 export const options = { headerShown: false };
 
 export default function ProfileScreen() {
-  // 임시 데이터
+  const { userName, userPersonality1, userPersonality2 } = useUser();
+
+  // 임시 데이터 (UserContext에서 가져온 데이터로 대체)
   const user = {
-    name: '조영찬',
+    name: userName || '사용자',
     email: 'choyoung0711@gamil.com',
+  };
+
+  const handleLogout = () => {
+    // 로그아웃 로직
+    console.log('로그아웃');
+  };
+
+  const handleWithdraw = () => {
+    // 회원탈퇴 로직
+    console.log('회원탈퇴');
   };
 
   return (
@@ -26,7 +39,12 @@ export default function ProfileScreen() {
           <MaterialCommunityIcons name="pencil" size={18} color="#003B68" />
         </TouchableOpacity>
         <ProfileInfo user={user} />
-        <ProfileMenu />
+        <ProfileMenu
+          userPersonality1={userPersonality1}
+          userPersonality2={userPersonality2}
+          onLogout={handleLogout}
+          onWithdraw={handleWithdraw}
+        />
       </View>
     </View>
   );
@@ -73,5 +91,6 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
 });
+
 
 

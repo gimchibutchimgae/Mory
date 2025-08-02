@@ -1,14 +1,35 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
+import { useRouter } from 'expo-router';
 
-export default function ProfileMenu({ onLogout, onWithdraw }: any) {
+interface ProfileMenuProps {
+  userPersonality1: '활발' | '소심' | null;
+  userPersonality2: '감성적' | '이성적' | null;
+  onLogout: () => void;
+  onWithdraw: () => void;
+}
+
+export default function ProfileMenu({ userPersonality1, userPersonality2, onLogout, onWithdraw }: ProfileMenuProps) {
+  const router = useRouter();
+
+  const displayPersonality = () => {
+    let personalityText = '';
+    if (userPersonality1) {
+      personalityText += userPersonality1;
+    }
+    if (userPersonality2) {
+      personalityText += (personalityText ? '고 ' : '') + userPersonality2;
+    }
+    return personalityText || '미설정';
+  };
+
   return (
     <View style={styles.menuContainer}>
-      <View style={styles.menuItem}>
+      <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/(auth)/personality-selection')}>
         <ThemedText style={styles.menuText}>성격</ThemedText>
-        <ThemedText style={styles.infoValue}>활발하고 감성적</ThemedText>
-      </View>
+        <ThemedText style={styles.infoValue}>{displayPersonality()}</ThemedText>
+      </TouchableOpacity>
       <TouchableOpacity style={styles.menuItem} onPress={onLogout}>
         <ThemedText style={styles.menuText}>로그아웃</ThemedText>
         <ThemedText style={styles.arrow}>{'>'}</ThemedText>
