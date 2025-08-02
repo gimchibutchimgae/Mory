@@ -1,16 +1,20 @@
 import { useRouter } from 'expo-router';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import BackButton from '@/components/BackButton';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState } from 'react';
 import { Colors } from '@/constants/Colors';
-import InputWithIcon from '@/components/InputWithIcon';
+import GoogleSignInButton from '@/components/GoogleSignInButton';
+import * as WebBrowser from 'expo-web-browser';
 
 export default function SignUpScreen() {
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleGoogleSignIn = async () => {
+    const result = await WebBrowser.openBrowserAsync(
+      'https://mory-backend-production.up.railway.app/auth/google'
+    );
+    // TODO: Google 로그인 후 리다이렉트 처리 (예: 토큰 저장 및 화면 전환)
+    // 현재는 단순히 브라우저를 여는 역할만 합니다.
+  };
 
   return (
     <View style={styles.container}>
@@ -20,16 +24,9 @@ export default function SignUpScreen() {
         <View style={{ width: 24 }} />{/* Placeholder for alignment */}
       </View>
 
-      <Text style={styles.label}>이름</Text>
-      <InputWithIcon placeholder="이름을 입력하세요" value={name} onChangeText={setName} />
+      <Text style={styles.instructionText}>구글 계정으로 간편하게 회원가입하세요.</Text>
 
-      <Text style={styles.label}>비밀번호</Text>
-      <InputWithIcon placeholder="비밀번호를 입력하세요" secureTextEntry showEyeIcon value={password} onChangeText={setPassword} />
-      <InputWithIcon placeholder="다시 한번 입력해주세요." secureTextEntry showEyeIcon value={confirmPassword} onChangeText={setConfirmPassword} />
-
-      <TouchableOpacity style={styles.signupButton} onPress={() => router.push('/initial-setup')}>
-        <Text style={styles.signupButtonText}>회원가입</Text>
-      </TouchableOpacity>
+      <GoogleSignInButton onPress={handleGoogleSignIn} />
     </View>
   );
 }
@@ -39,36 +36,24 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: Colors.primaryBackground,
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 30,
+    width: '100%',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: Colors.white,
   },
-  label: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  instructionText: {
+    fontSize: 16,
     color: Colors.white,
-    marginBottom: 10,
-    marginTop: 20,
-  },
-  signupButton: {
-    backgroundColor: Colors.secondaryBackground,
-    width: '100%',
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 30,
-  },
-  signupButtonText: {
-    color: Colors.white,
-    fontSize: 18,
-    fontWeight: 'bold',
+    marginBottom: 40,
+    textAlign: 'center',
   },
 });

@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { Alert } from 'react-native'; // Alert import 추가
+import { deleteAccountApi } from '@/api/auth'; // deleteAccountApi import 추가
 
 interface AuthContextType {
   token: string | null;
@@ -49,25 +51,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const deleteAccount = async () => {
     try {
-      const response = await fetch('https://mory-backend-production.up.railway.app/auth/me', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        console.log('Account deleted successfully');
-        await signOut(); // 계정 삭제 후 로그아웃 처리
-      } else {
-        const errorData = await response.json();
-        console.error('Failed to delete account:', errorData);
-        alert(`회원 탈퇴 실패: ${errorData.message || '알 수 없는 오류'}`);
+      if (!token) {
+        Alert.alert('오류', '로그인 상태가 아닙니다.');
+        return;
       }
-    } catch (error) {
+      await deleteAccountApi(token);
+      console.log('Account deleted successfully');
+      await signOut(); // 계정 삭제 후 로그아웃 처리
+      Alert.alert('성공', '회원 탈퇴가 완료되었습니다.');
+    } catch (error: any) {
       console.error('Error deleting account:', error);
-      alert('회원 탈퇴 중 오류가 발생했습니다.');
+      Alert.alert('회원 탈퇴 실패', error.message || '알 수 없는 오류가 발생했습니다.');
     }
   };
 

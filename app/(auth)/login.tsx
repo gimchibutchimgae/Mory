@@ -1,22 +1,39 @@
 import { Link, useRouter } from 'expo-router';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import InputWithIcon from '@/components/InputWithIcon';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
 import { useAuth } from '@/app/context/AuthContext';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Colors } from '@/constants/Colors';
+import { loginApi } from '@/api/auth';
+import * as WebBrowser from 'expo-web-browser';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
-  const [autoLogin, setAutoLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    signIn();
-    router.replace('/(tabs)/');
+  const handleLogin = async () => {
+    try {
+      const response = await loginApi(email, password);
+      if (response.accessToken) {
+        signIn(response.accessToken);
+        router.replace('/(tabs)/');
+      } else {
+        Alert.alert('로그인 실패', '알 수 없는 오류가 발생했습니다.');
+      }
+    } catch (error: any) {
+      Alert.alert('로그인 실패', error.message || '알 수 없는 오류가 발생했습니다.');
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const result = await WebBrowser.openBrowserAsync(
+      'https://mory-backend-production.up.railway.app/auth/google'
+    );
+    // TODO: Google 로그인 후 리다이렉트 처리 (예: 토큰 저장 및 화면 전환)
+    // 현재는 단순히 브라우저를 여는 역할만 합니다.
   };
 
   return (
@@ -26,26 +43,11 @@ export default function LoginScreen() {
       <InputWithIcon iconName="account" placeholder="아이디" value={email} onChangeText={setEmail} />
       <InputWithIcon iconName="lock" placeholder="비밀번호" secureTextEntry value={password} onChangeText={setPassword} />
 
-      <View style={styles.autoLoginContainer}>
-        <TouchableOpacity onPress={() => setAutoLogin(!autoLogin)} style={styles.checkboxButton}>
-          <MaterialCommunityIcons
-            name={autoLogin ? "checkbox-marked" : "checkbox-blank-outline"}
-            size={20}
-            color={Colors.white}
-          />
-        </TouchableOpacity>
-        <Text style={styles.autoLoginText}>자동로그인</Text>
-      </View>
-
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginButtonText}>로그인</Text>
       </TouchableOpacity>
 
       <View style={styles.linkContainer}>
-        <Text style={styles.linkText}>아이디 찾기</Text>
-        <Text style={styles.separator}>|</Text>
-        <Text style={styles.linkText}>비밀번호 찾기</Text>
-        <Text style={styles.separator}>|</Text>
         <Link href="/signup" style={styles.linkText}>회원가입</Link>
       </View>
 
@@ -74,19 +76,6 @@ const styles = StyleSheet.create({
     color: Colors.white,
     marginBottom: 50,
   },
-  autoLoginContainer: {
-    flexDirection: 'row',
-    alignSelf: 'flex-end',
-    marginRight: 10,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  checkboxButton: {
-    marginRight: 5,
-  },
-  autoLoginText: {
-    color: Colors.white,
-  },
   loginButton: {
     backgroundColor: Colors.secondaryBackground,
     width: '100%',
@@ -107,10 +96,6 @@ const styles = StyleSheet.create({
   linkText: {
     color: Colors.white,
     marginHorizontal: 5,
-    fontSize: 14,
-  },
-  separator: {
-    color: Colors.white,
     fontSize: 14,
   },
   dividerContainer: {
