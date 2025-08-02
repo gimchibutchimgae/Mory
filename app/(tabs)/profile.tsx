@@ -3,7 +3,7 @@ import { Colors } from '@/constants/Colors';
 import ProfileAvatar from '@/components/profile/ProfileAvatar';
 import ProfileInfo from '@/components/profile/ProfileInfo';
 import ProfileMenu from '@/components/profile/ProfileMenu';
-import { FontAwesome } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 
 export const options = { headerShown: false };
@@ -23,7 +23,7 @@ export default function ProfileScreen() {
       </View>
       <View style={styles.profileInfoBox}>
         <TouchableOpacity style={styles.editButton}>
-          <FontAwesome name="pencil" size={18} color="#003B68" />
+          <MaterialCommunityIcons name="pencil" size={18} color="#003B68" />
         </TouchableOpacity>
         <ProfileInfo user={user} />
         <ProfileMenu />
