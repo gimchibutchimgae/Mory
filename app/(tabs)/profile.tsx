@@ -34,7 +34,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#003B68',
+    backgroundColor: '#00223D',
     alignItems: 'center',
   },
   title: {
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     marginBottom: -90,
   },
   profileInfoBox: {
-    backgroundColor: '#072B4B',
+    backgroundColor: '#00274e',
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     width: '100%',
