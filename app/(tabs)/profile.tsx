@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   avatarContainer: {
-    marginBottom: -90,
+    marginBottom: -117, // 234 * 1/2
   },
   profileInfoBox: {
     backgroundColor: '#00274e',
@@ -72,4 +72,5 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
 });
+
 

@@ -1,12 +1,29 @@
-import { Stack } from 'expo-router';
+import { Stack, SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import 'react-native-reanimated';
+import { useFonts } from 'expo-font';
 
 import { AuthContext } from '@/app/context/AuthContext';
 
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
+
 export default function RootLayout() {
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [loaded, error] = useFonts({
+    'Pretendard': require('../assets/fonts/PretendardVariable.ttf'),
+  });
+
+  useEffect(() => {
+    if (error) throw error;
+  }, [error]);
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
 
   const authContext = useMemo(
     () => ({
@@ -16,6 +33,10 @@ export default function RootLayout() {
     }),
     [],
   );
+
+  if (!loaded) {
+    return null;
+  }
 
   return (
     <AuthContext.Provider value={authContext}>
