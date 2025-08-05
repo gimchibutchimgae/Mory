@@ -1,6 +1,8 @@
+import { useCalendar } from '@/app/context/CalendarContext';
 import { IconSvg } from '@/components/ui/IconSvg';
+import { mapAPIEmotionToDayState } from '@/utils/emotionMapper';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import Svg, { Path } from 'react-native-svg';
 import * as S from './style';
 
@@ -17,7 +19,6 @@ const gradientColors: Record<
 };
 
 type DayState = 'gray' | 'red' | 'yellow' | 'green' | 'blue';
-type WeekDataMap = { [date: string]: DayState };
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -37,7 +38,7 @@ function getKSTTodayString(): string {
   return `${year}-${month}-${day}`;
 }
 
-// 오늘 표시용 SVG 컴포넌트 (MonthCalendar에서 가져옴)
+// 오늘 표시용 SVG 컴포넌트
 const TodayMorySvg = ({ size = 16 }: { size?: number }) => (
   <Svg width={size} height={size} viewBox="0 0 35 34" fill="none">
     <Path
@@ -46,12 +47,6 @@ const TodayMorySvg = ({ size = 16 }: { size?: number }) => (
     />
   </Svg>
 );
-
-// 랜덤 상태 생성 함수 (MonthCalendar에서 가져옴)
-function getRandomState(): DayState {
-  const states: DayState[] = ['gray', 'red', 'yellow', 'green', 'blue'];
-  return states[Math.floor(Math.random() * states.length)];
-}
 
 // 특정 주의 날짜들을 가져오는 함수
 function getWeekDates(year: number, month: number, weekNumber: number): string[] {
@@ -98,13 +93,13 @@ function getCurrentWeekDates(): string[] {
   return weekDates;
 }
 
-// 주간 감정 데이터 생성
-function getWeekDataMap(weekDates: string[]): WeekDataMap {
-  const map: WeekDataMap = {};
-  weekDates.forEach(date => {
-    map[date] = getRandomState();
-  });
-  return map;
+// 주간 감정 데이터를 API에서 가져와서 매핑하는 함수
+function getEmotionForDate(dateString: string, monthData: any): DayState {
+  if (!monthData) return 'gray';
+  
+  const day = new Date(dateString).getDate().toString();
+  const apiEmotion = monthData[day];
+  return mapAPIEmotionToDayState(apiEmotion);
 }
 
 interface WeekCalendarProps {
@@ -123,6 +118,7 @@ export default function WeekCalendar({
   onTodayEmotionChange
 }: WeekCalendarProps) {
   const router = useRouter();
+  const { monthData, fetchMonthData, loading } = useCalendar();
   const today = getKSTToday();
   const todayString = getKSTTodayString();
   
@@ -135,11 +131,19 @@ export default function WeekCalendar({
     }
   }, [year, month, weekNumber, useCurrentWeek]);
   
-  // 주간 감정 데이터
-  const weekDataMap = useMemo(() => getWeekDataMap(weekDates), [weekDates]);
+  // 현재 월의 데이터 가져오기 (데이터가 없을 때만)
+  const currentMonth = today.getMonth() + 1;
+  useEffect(() => {
+    if (!monthData && !loading) {
+      fetchMonthData(currentMonth);
+    }
+  }, [currentMonth, fetchMonthData, monthData, loading]);
   
   // 오늘의 감정 상태를 부모 컴포넌트에 전달
-  const todayEmotion = weekDataMap[todayString] || null;
+  const todayEmotion = useMemo(() => {
+    return getEmotionForDate(todayString, monthData);
+  }, [todayString, monthData]);
+  
   React.useEffect(() => {
     if (onTodayEmotionChange) {
       onTodayEmotionChange(todayEmotion);
@@ -185,10 +189,12 @@ export default function WeekCalendar({
           const todayObj = new Date(kstToday.getUTCFullYear(), kstToday.getUTCMonth(), kstToday.getUTCDate());
           const isPastOrToday = dateObj <= todayObj;
           
-          // 감정 상태에 따른 그라데이션 색상
+          // 감정 상태에 따른 그라데이션 색상 - API 데이터 사용
+          const emotionState = getEmotionForDate(dateString, monthData);
           let gradientColor = gradientColors.gray;
-          if (isPastOrToday && weekDataMap[dateString]) {
-            gradientColor = gradientColors[weekDataMap[dateString]];
+          
+          if (isPastOrToday && emotionState !== 'gray') {
+            gradientColor = gradientColors[emotionState];
           }
           
           // 과거/오늘 날짜에 데이터가 없을 때 색상 처리

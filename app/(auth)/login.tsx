@@ -1,22 +1,55 @@
-import { Link, useRouter } from 'expo-router';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import InputWithIcon from '@/components/InputWithIcon';
-import GoogleSignInButton from '@/components/GoogleSignInButton';
 import { useAuth } from '@/app/context/AuthContext';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useState } from 'react';
+import GoogleSignInButton from '@/components/GoogleSignInButton';
+import InputWithIcon from '@/components/InputWithIcon';
 import { Colors } from '@/constants/Colors';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Link, useRouter } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
   const [autoLogin, setAutoLogin] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('guest');
+  const [password, setPassword] = useState('guest');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    signIn();
-    router.replace('/(tabs)/');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('오류', '이메일과 비밀번호를 입력해주세요.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('https://mory-backend-production.up.railway.app/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.accessToken) {
+        console.log('Login successful:', data);
+        await signIn(data.accessToken);
+        router.replace('/(tabs)');
+      } else {
+        console.error('Login failed:', data);
+        Alert.alert('로그인 실패', data.message || '이메일 또는 비밀번호가 올바르지 않습니다.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('오류', '로그인 중 오류가 발생했습니다. 네트워크 연결을 확인해주세요.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,8 +70,16 @@ export default function LoginScreen() {
         <Text style={styles.autoLoginText}>자동로그인</Text>
       </View>
 
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>로그인</Text>
+      <TouchableOpacity 
+        style={[styles.loginButton, loading && styles.loginButtonDisabled]} 
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color={Colors.white} />
+        ) : (
+          <Text style={styles.loginButtonText}>로그인</Text>
+        )}
       </TouchableOpacity>
 
       <View style={styles.linkContainer}>
@@ -94,6 +135,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 20,
+  },
+  loginButtonDisabled: {
+    backgroundColor: Colors.darkGray,
+    opacity: 0.7,
   },
   loginButtonText: {
     color: Colors.white,
