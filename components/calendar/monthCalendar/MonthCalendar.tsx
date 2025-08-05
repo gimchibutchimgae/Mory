@@ -55,12 +55,17 @@ const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 // 한국 시간대(KST) 기준 오늘 날짜 가져오기
 function getKSTToday(): Date {
   const now = new Date();
+  // 한국은 UTC+9
   const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
   return kstDate;
 }
 
 function getKSTTodayString(): string {
-  return getKSTToday().toISOString().split('T')[0];
+  const kstToday = getKSTToday();
+  const year = kstToday.getUTCFullYear();
+  const month = String(kstToday.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(kstToday.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 // 오늘 표시용 SVG 컴포넌트
@@ -115,12 +120,11 @@ export default function MonthCalendar() {
           )}
         dayComponent={({ date }) => {
           const dateString = date?.dateString;
-          const dateObj = dateString ? new Date(dateString) : null;
+          const dateObj = dateString ? new Date(dateString + 'T00:00:00+09:00') : null;
           const kstToday = getKSTToday();
-          const isPast =
-            dateString && new Date(dateString).setHours(0, 0, 0, 0) < kstToday.setHours(0, 0, 0, 0);
-          const isFuture =
-            dateString && new Date(dateString).setHours(0, 0, 0, 0) > kstToday.setHours(0, 0, 0, 0);
+          const todayObj = new Date(kstToday.getUTCFullYear(), kstToday.getUTCMonth(), kstToday.getUTCDate());
+          const isPast = dateObj && dateObj < todayObj;
+          const isFuture = dateObj && dateObj > todayObj;
           const isToday = dateString === todayString;
           const isPastOrToday = isPast || isToday;
 
@@ -144,7 +148,7 @@ export default function MonthCalendar() {
             textColor = 'rgba(115, 115, 115, 0.70)';
           } else if (isPast && dateObj && dateObj.getMonth() === currentMonth - 1) {
             // 과거 날짜이면서 현재 월인 경우
-            const state: DayState = monthEmotionMap[dateString] || null;
+            const state = dateString ? monthEmotionMap[dateString] : null;
             if (state && state !== 'gray') {
               // 감정 데이터가 있는 경우
               gradientColor = gradientColors[state];
