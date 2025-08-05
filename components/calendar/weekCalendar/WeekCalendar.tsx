@@ -24,12 +24,17 @@ const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 // 한국 시간대(KST) 기준 오늘 날짜 가져오기
 function getKSTToday(): Date {
   const now = new Date();
+  // 한국은 UTC+9
   const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
   return kstDate;
 }
 
 function getKSTTodayString(): string {
-  return getKSTToday().toISOString().split('T')[0];
+  const kstToday = getKSTToday();
+  const year = kstToday.getUTCFullYear();
+  const month = String(kstToday.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(kstToday.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 // 오늘 표시용 SVG 컴포넌트 (MonthCalendar에서 가져옴)
@@ -72,18 +77,22 @@ function getWeekDates(year: number, month: number, weekNumber: number): string[]
 
 // 오늘이 포함된 주간의 날짜들을 가져오는 함수
 function getCurrentWeekDates(): string[] {
-  const today = getKSTToday();
-  const dayOfWeek = today.getDay(); // 0: 일요일, 1: 월요일, ...
+  const kstToday = getKSTToday();
+  const dayOfWeek = kstToday.getUTCDay(); // 0: 일요일, 1: 월요일, ...
   
   // 이번 주 일요일 계산
-  const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - dayOfWeek);
+  const startOfWeek = new Date(kstToday);
+  startOfWeek.setUTCDate(kstToday.getUTCDate() - dayOfWeek);
   
   const weekDates: string[] = [];
   for (let i = 0; i < 7; i++) {
     const currentDate = new Date(startOfWeek);
-    currentDate.setDate(startOfWeek.getDate() + i);
-    weekDates.push(currentDate.toISOString().split('T')[0]);
+    currentDate.setUTCDate(startOfWeek.getUTCDate() + i);
+    
+    const year = currentDate.getUTCFullYear();
+    const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(currentDate.getUTCDate()).padStart(2, '0');
+    weekDates.push(`${year}-${month}-${day}`);
   }
   
   return weekDates;
@@ -168,10 +177,13 @@ export default function WeekCalendar({
       {/* 주간 캘린더 */}
       <S.WeekContainer>
         {weekDates.map((dateString, index) => {
-          const date = new Date(dateString);
+          const date = new Date(dateString + 'T00:00:00+09:00'); // KST 시간대로 파싱
           const dayNumber = date.getDate();
           const isToday = dateString === todayString;
-          const isPastOrToday = new Date(dateString).setHours(0, 0, 0, 0) <= getKSTToday().setHours(0, 0, 0, 0);
+          const kstToday = getKSTToday();
+          const dateObj = new Date(dateString + 'T00:00:00+09:00');
+          const todayObj = new Date(kstToday.getUTCFullYear(), kstToday.getUTCMonth(), kstToday.getUTCDate());
+          const isPastOrToday = dateObj <= todayObj;
           
           // 감정 상태에 따른 그라데이션 색상
           let gradientColor = gradientColors.gray;
