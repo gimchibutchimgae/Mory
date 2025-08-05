@@ -3,9 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { Alert } from 'react-native';
 import { deleteAccountApi } from '@/api/auth';
+import { jwtDecode } from "jwt-decode";
 
 interface AuthContextType {
   token: string | null;
+  userEmail: string | null;
   signIn: (newToken: string) => void;
   signOut: () => void;
   deleteAccount: () => Promise<void>;
@@ -25,14 +27,29 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+interface DecodedToken {
+  email: string;
+  // 다른 필드들도 필요하다면 여기에 추가
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const loadToken = async () => {
       const storedToken = await AsyncStorage.getItem('userToken');
       if (storedToken) {
         setToken(storedToken);
+        try {
+          const decoded: DecodedToken = jwtDecode(storedToken);
+          setUserEmail(decoded.email);
+        } catch (error) {
+          console.error("Failed to decode token:", error);
+          setToken(null);
+          setUserEmail(null);
+          await AsyncStorage.removeItem('userToken');
+        }
       }
     };
     loadToken();
@@ -41,10 +58,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signIn = async (newToken: string) => {
     setToken(newToken);
     await AsyncStorage.setItem('userToken', newToken);
+    try {
+      const decoded: DecodedToken = jwtDecode(newToken);
+      setUserEmail(decoded.email);
+    } catch (error) {
+      console.error("Failed to decode token on sign-in:", error);
+      setUserEmail(null);
+    }
   };
 
   const signOut = async () => {
     setToken(null);
+    setUserEmail(null);
     await AsyncStorage.removeItem('userToken');
     router.replace('/(auth)/login');
   };
@@ -66,7 +91,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   return (
-    <AuthContext.Provider value={{ token, signIn, signOut, deleteAccount }}>
+    <AuthContext.Provider value={{ token, userEmail, signIn, signOut, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );
