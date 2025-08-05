@@ -1,10 +1,11 @@
-import { Stack, SplashScreen } from 'expo-router';
+import { useFonts } from 'expo-font';
+import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-import { useFonts } from 'expo-font';
 
 import { AuthProvider, useAuth } from '@/app/context/AuthContext';
+import { CalendarProvider } from '@/app/context/CalendarContext';
 import { UserProvider } from '@/app/context/UserContext';
 
 // Keep the splash screen visible while we fetch resources
@@ -32,8 +33,10 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <UserProvider>
-        <RootLayoutNav />
-        <StatusBar style="auto" />
+        <CalendarProvider>
+          <RootLayoutNav />
+          <StatusBar style="auto" />
+        </CalendarProvider>
       </UserProvider>
     </AuthProvider>
   );
