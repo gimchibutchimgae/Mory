@@ -34,13 +34,13 @@ export const loginApi = async (email: string, password: string) => {
   return response.json();
 };
 
-export const registerApi = async (email: string, name: string, password: string, mbti: string) => {
+export const registerApi = async (email: string, name: string, password: string, mbti: string, provider: string) => {
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ email, name, password, mbti }),
+    body: JSON.stringify({ email, name, password, mbti, provider }),
   });
 
   if (!response.ok) {

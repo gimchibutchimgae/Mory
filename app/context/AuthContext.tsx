@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import { Alert } from 'react-native'; // Alert import 추가
-import { deleteAccountApi } from '@/api/auth'; // deleteAccountApi import 추가
+import { Alert } from 'react-native';
+import { deleteAccountApi } from '@/api/auth';
 
 interface AuthContextType {
   token: string | null;

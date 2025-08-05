@@ -107,10 +107,10 @@ export default function RecordDetailScreen() {
   const primaryEmotionText = getEmotionText(fakeData.primary_emotion_type);
 
   const semiCircleData = [
-    { value: fakeData.ratio.find(([e]) => e === 'BLUE')[1] * 100, color: getEmotionColor('BLUE') },
-    { value: fakeData.ratio.find(([e]) => e === 'RED')[1] * 100, color: getEmotionColor('RED') },
-    { value: fakeData.ratio.find(([e]) => e === 'GREEN')[1] * 100, color: getEmotionColor('GREEN') },
-    { value: fakeData.ratio.find(([e]) => e === 'YELLOW')[1] * 100, color: getEmotionColor('YELLOW') },
+    { value: (fakeData.ratio.find(([e]) => e === 'BLUE')?.[1] || 0) * 100, color: getEmotionColor('BLUE') },
+    { value: (fakeData.ratio.find(([e]) => e === 'RED')?.[1] || 0) * 100, color: getEmotionColor('RED') },
+    { value: (fakeData.ratio.find(([e]) => e === 'GREEN')?.[1] || 0) * 100, color: getEmotionColor('GREEN') },
+    { value: (fakeData.ratio.find(([e]) => e === 'YELLOW')?.[1] || 0) * 100, color: getEmotionColor('YELLOW') },
   ];
 
   return (
@@ -121,7 +121,7 @@ export default function RecordDetailScreen() {
       <Text style={styles.date}>{`${fakeData.diary.year}년 ${fakeData.diary.month}월 ${fakeData.diary.day}일`}</Text>
       <View style={styles.chartBox}>
         <View style={{ marginTop: 20 }}>
-          <SemiCircleChart data={semiCircleData} size={(Dimensions.get('window').width - 80) * 0.8} strokeWidth={80 * 0.8} />
+          <SemiCircleChart data={semiCircleData} size={200} strokeWidth={40} />
         </View>
       </View>
       <View style={[styles.emotionRow, { marginTop: 40 }]}>
@@ -194,18 +194,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#112B44',
     borderRadius: 20,
     alignItems: 'center',
+    justifyContent: 'center',
     padding: 6,
     height: 220,
   },
   emotionRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
     marginBottom: 24,
     paddingHorizontal: 10,
     marginTop: 32,
   },
   emotionItem: {
     alignItems: 'center',
+    marginHorizontal: 10,
+    marginBottom: 10,
   },
   circle: {
     width: 28,
