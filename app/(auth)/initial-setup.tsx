@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { View, Button, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Button, StyleSheet, TextInput, TouchableOpacity, Image, Animated } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import ProgressBar from '@/components/ProgressBar';
 import BackButton from '@/components/BackButton';
@@ -17,6 +17,32 @@ export default function InitialSetupScreen() {
   const [name, setName] = useState('');
   const [personality1, setPersonality1] = useState<'활발' | '소심' | null>(null);
   const [personality2, setPersonality2] = useState<'감성적' | '이성적' | null>(null);
+
+  const opacity1 = new Animated.Value(0);
+  const opacity2 = new Animated.Value(0);
+  const opacity3 = new Animated.Value(0);
+
+  useEffect(() => {
+    if (step === TOTAL_STEPS) {
+      Animated.sequence([
+        Animated.timing(opacity1, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity2, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity3, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [step]);
 
   const handleNext = () => {
     if (step < TOTAL_STEPS) {
@@ -88,9 +114,9 @@ export default function InitialSetupScreen() {
 
       {step === 3 && (
         <View style={styles.stepContentFinal}>
-          <ThemedText style={[styles.finalText, styles.alignLeft]}>너의 감정을 가지고</ThemedText>
-          <ThemedText style={[styles.finalText, styles.alignRight]}>모리가 어떤 모습으로 성장할까</ThemedText>
-          <ThemedText style={[styles.finalText, styles.alignLeft]}>감정 일기 시작해보자</ThemedText>
+          <Animated.Text style={[styles.finalText, styles.alignLeft, { opacity: opacity1 }]}>너의 감정을 가지고</Animated.Text>
+          <Animated.Text style={[styles.finalText, styles.alignRight, { opacity: opacity2 }]}>모리가 어떤 모습으로 성장할까</Animated.Text>
+          <Animated.Text style={[styles.finalText, styles.alignLeft, { opacity: opacity3 }]}>감정 일기 시작해보자</Animated.Text>
           <Image source={require('@/assets/images/mory_initial.png')} style={styles.characterPlaceholder} />
         </View>
       )}
