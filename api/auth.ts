@@ -50,3 +50,30 @@ export const registerApi = async (email: string, name: string, password: string,
 
   return response.json();
 };
+
+export const googleSignInApi = async () => {
+  try {
+    const result = await WebBrowser.openBrowserAsync(
+      `${API_BASE_URL}/auth/google`
+    );
+    console.log("WebBrowser result:", result);
+
+    if (result.type === 'success') {
+      const successResult = result as WebBrowser.WebBrowserRedirectResult;
+      if (successResult.url) {
+        const url = new URL(successResult.url);
+        const status = url.searchParams.get('status');
+        const accessToken = url.searchParams.get('accessToken');
+        const email = url.searchParams.get('email');
+        const name = url.searchParams.get('name');
+        const provider = url.searchParams.get('provider');
+
+        return { status, accessToken, email, name, provider };
+      }
+    }
+    throw new Error('Google 로그인 응답이 유효하지 않습니다.');
+  } catch (error) {
+    console.error("Error in googleSignInApi:", error);
+    throw error;
+  }
+};
