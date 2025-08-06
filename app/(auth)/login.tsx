@@ -8,7 +8,6 @@ import { googleSignInApi, loginApi } from '@/api/auth';
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
-
   const handleGoogleSignIn = async () => {
     try {
       const { status, accessToken, email: googleEmail, name, provider } = await googleSignInApi();
@@ -54,7 +53,6 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.logo}>mory</Text>
-
       <View style={styles.dividerContainer}>
         <View style={styles.divider} />
         <Text style={styles.dividerText}>SNS 계정으로 로그인</Text>
