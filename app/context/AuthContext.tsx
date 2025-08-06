@@ -4,7 +4,6 @@ import { router } from 'expo-router';
 import { Alert } from 'react-native';
 import { deleteAccountApi } from '@/api/auth';
 import { jwtDecode } from "jwt-decode";
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
   token: string | null;
