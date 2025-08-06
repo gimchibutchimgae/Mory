@@ -1,30 +1,83 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { View, Button, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useState, useEffect } from 'react';
+import { View, Button, StyleSheet, TextInput, TouchableOpacity, Image, Animated, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import ProgressBar from '@/components/ProgressBar';
 import BackButton from '@/components/BackButton';
 import CharacterSelection from '@/components/CharacterSelection';
 import { useAuth } from '@/app/context/AuthContext';
 import { Colors } from '@/constants/Colors';
+import { registerApi, loginApi } from '@/api/auth';
 
 const TOTAL_STEPS = 3;
 
 export default function InitialSetupScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
+  const params = useLocalSearchParams();
+  const { email: paramEmail, name: paramName, provider: paramProvider } = params;
+
   const [step, setStep] = useState(1);
-  const [name, setName] = useState('');
+  const [name, setName] = useState(paramName ? String(paramName) : '');
   const [personality1, setPersonality1] = useState<'활발' | '소심' | null>(null);
   const [personality2, setPersonality2] = useState<'감성적' | '이성적' | null>(null);
 
-  const handleNext = () => {
+  const opacity1 = new Animated.Value(0);
+  const opacity2 = new Animated.Value(0);
+  const opacity3 = new Animated.Value(0);
+
+  useEffect(() => {
+    if (step === TOTAL_STEPS) {
+      Animated.sequence([
+        Animated.timing(opacity1, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity2, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity3, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [step]);
+
+  const handleNext = async () => {
     if (step < TOTAL_STEPS) {
       setStep(step + 1);
-    }
-    else {
-      signIn();
-      router.replace('/(tabs)/');
+    } else {
+      // 마지막 단계에서 회원가입 처리
+      if (!paramEmail || !name || !personality1 || !personality2 || !paramProvider) {
+        Alert.alert('오류', '모든 정보를 입력해주세요.');
+        return;
+      }
+
+      const mbti = `${personality1 === '활발' ? 'E' : 'I'}${personality2 === '감성적' ? 'F' : 'T'}`;
+      const tempPassword = Math.random().toString(36).substring(2, 15); // 임시 비밀번호 생성
+
+      try {
+        const response = await registerApi(String(paramEmail), name, tempPassword, mbti, String(paramProvider));
+        if (response) {
+          // 회원가입 성공 후 로그인 처리 (백엔드에서 토큰을 바로 주지 않으므로, 로그인 API를 호출해야 함)
+          // 현재는 Google 로그인 후 바로 토큰을 받는 시나리오이므로, 이 부분은 추후 백엔드 응답에 따라 수정 필요
+          // 여기서는 일단 signIn()을 호출하여 AuthContext에 로그인 상태를 설정하고 메인으로 이동
+          const loginResponse = await loginApi(String(paramEmail), tempPassword);
+          if (loginResponse && loginResponse.accessToken) {
+            signIn(loginResponse.accessToken);
+            router.replace('/(tabs)/');
+          } else {
+            Alert.alert('로그인 실패', '토큰을 받아오지 못했습니다.');
+          }
+        }
+      } catch (error: any) {
+        Alert.alert('회원가입 실패', error.message || '알 수 없는 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -88,9 +141,9 @@ export default function InitialSetupScreen() {
 
       {step === 3 && (
         <View style={styles.stepContentFinal}>
-          <ThemedText style={[styles.finalText, styles.alignLeft]}>너의 감정을 가지고</ThemedText>
-          <ThemedText style={[styles.finalText, styles.alignRight]}>모리가 어떤 모습으로 성장할까</ThemedText>
-          <ThemedText style={[styles.finalText, styles.alignLeft]}>감정 일기 시작해보자</ThemedText>
+          <Animated.Text style={[styles.finalText, styles.alignLeft, { opacity: opacity1 }]}>너의 감정을 가지고</Animated.Text>
+          <Animated.Text style={[styles.finalText, styles.alignRight, { opacity: opacity2 }]}>모리가 어떤 모습으로 성장할까</Animated.Text>
+          <Animated.Text style={[styles.finalText, styles.alignLeft, { opacity: opacity3 }]}>감정 일기 시작해보자</Animated.Text>
           <Image source={require('@/assets/images/mory_initial.png')} style={styles.characterPlaceholder} />
         </View>
       )}

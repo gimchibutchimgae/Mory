@@ -52,21 +52,21 @@ const TodayMorySvg = ({ size = 16 }: { size?: number }) => (
 function getWeekDates(year: number, month: number, weekNumber: number): string[] {
   const firstDayOfMonth = new Date(year, month - 1, 1);
   const firstDayWeekday = firstDayOfMonth.getDay(); // 0: 일요일, 1: 월요일, ...
-  
+
   // 첫 번째 주의 시작일 계산
   const firstWeekStart = new Date(year, month - 1, 1 - firstDayWeekday);
-  
+
   // 해당 주의 시작일 계산
   const weekStart = new Date(firstWeekStart);
   weekStart.setDate(firstWeekStart.getDate() + (weekNumber - 1) * 7);
-  
+
   const weekDates: string[] = [];
   for (let i = 0; i < 7; i++) {
     const currentDate = new Date(weekStart);
     currentDate.setDate(weekStart.getDate() + i);
     weekDates.push(currentDate.toISOString().split('T')[0]);
   }
-  
+
   return weekDates;
 }
 
@@ -74,29 +74,25 @@ function getWeekDates(year: number, month: number, weekNumber: number): string[]
 function getCurrentWeekDates(): string[] {
   const kstToday = getKSTToday();
   const dayOfWeek = kstToday.getUTCDay(); // 0: 일요일, 1: 월요일, ...
-  
   // 이번 주 일요일 계산
   const startOfWeek = new Date(kstToday);
   startOfWeek.setUTCDate(kstToday.getUTCDate() - dayOfWeek);
-  
   const weekDates: string[] = [];
   for (let i = 0; i < 7; i++) {
     const currentDate = new Date(startOfWeek);
     currentDate.setUTCDate(startOfWeek.getUTCDate() + i);
-    
     const year = currentDate.getUTCFullYear();
     const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0');
     const day = String(currentDate.getUTCDate()).padStart(2, '0');
     weekDates.push(`${year}-${month}-${day}`);
   }
-  
+
   return weekDates;
 }
 
 // 주간 감정 데이터를 API에서 가져와서 매핑하는 함수
 function getEmotionForDate(dateString: string, monthData: any): DayState {
   if (!monthData) return 'gray';
-  
   const day = new Date(dateString).getDate().toString();
   const apiEmotion = monthData[day];
   return mapAPIEmotionToDayState(apiEmotion);
@@ -110,18 +106,18 @@ interface WeekCalendarProps {
   onTodayEmotionChange?: (emotion: DayState | null) => void; // 오늘의 감정 상태 콜백
 }
 
-export default function WeekCalendar({ 
-  year = new Date().getFullYear(), 
-  month = new Date().getMonth() + 1, 
-  weekNumber = 1,
-  useCurrentWeek = true, // 기본값을 true로 설정
-  onTodayEmotionChange
-}: WeekCalendarProps) {
+export default function WeekCalendar({
+                                       year = new Date().getFullYear(),
+                                       month = new Date().getMonth() + 1,
+                                       weekNumber = 1,
+                                       useCurrentWeek = true, // 기본값을 true로 설정
+                                       onTodayEmotionChange
+                                     }: WeekCalendarProps) {
   const router = useRouter();
   const { monthData, fetchMonthData, loading } = useCalendar();
   const today = getKSTToday();
   const todayString = getKSTTodayString();
-  
+
   // 해당 주의 날짜들 계산
   const weekDates = useMemo(() => {
     if (useCurrentWeek) {
@@ -130,7 +126,6 @@ export default function WeekCalendar({
       return getWeekDates(year, month, weekNumber);
     }
   }, [year, month, weekNumber, useCurrentWeek]);
-  
   // 현재 월의 데이터 가져오기 (데이터가 없을 때만)
   const currentMonth = today.getMonth() + 1;
   useEffect(() => {
@@ -138,12 +133,10 @@ export default function WeekCalendar({
       fetchMonthData(currentMonth);
     }
   }, [currentMonth, fetchMonthData, monthData, loading]);
-  
   // 오늘의 감정 상태를 부모 컴포넌트에 전달
   const todayEmotion = useMemo(() => {
     return getEmotionForDate(todayString, monthData);
   }, [todayString, monthData]);
-  
   React.useEffect(() => {
     if (onTodayEmotionChange) {
       onTodayEmotionChange(todayEmotion);
@@ -171,13 +164,13 @@ export default function WeekCalendar({
         <S.YearMonthText>
           {currentWeekInfo.year}년 {currentWeekInfo.month}월
         </S.YearMonthText>
-        
+
         {/* 캘린더 아이콘 - 우측 상단 */}
         <S.CalendarIconButton onPress={() => router.push('/(calendar)/calendar')}>
           <IconSvg name="calendar" size={27} color="#FFFFFF" />
         </S.CalendarIconButton>
       </S.HeaderContainer>
-      
+
       {/* 주간 캘린더 */}
       <S.WeekContainer>
         {weekDates.map((dateString, index) => {
@@ -188,32 +181,30 @@ export default function WeekCalendar({
           const dateObj = new Date(dateString + 'T00:00:00+09:00');
           const todayObj = new Date(kstToday.getUTCFullYear(), kstToday.getUTCMonth(), kstToday.getUTCDate());
           const isPastOrToday = dateObj <= todayObj;
-          
           // 감정 상태에 따른 그라데이션 색상 - API 데이터 사용
           const emotionState = getEmotionForDate(dateString, monthData);
           let gradientColor = gradientColors.gray;
-          
           if (isPastOrToday && emotionState !== 'gray') {
             gradientColor = gradientColors[emotionState];
           }
-          
+
           // 과거/오늘 날짜에 데이터가 없을 때 색상 처리
           if (isPastOrToday && gradientColor === gradientColors.gray) {
             gradientColor = ['#E8E8E880', '#E8E8E880'];
           }
-          
+
           // 요일 텍스트 색상 계산
           let weekdayColor = '#ffffff';
           if (!isPastOrToday) {
             weekdayColor = '#736F6FB2';
           }
-          
+
           // 날짜 텍스트 색상 계산
           let dateTextColor = '#000000';
           if (!isPastOrToday) {
             dateTextColor = '#737373B2';
           }
-          
+
           return (
             <S.DayContainer key={dateString}>
               {/* 오늘 표시 SVG - 파란색 배경 뒤로 */}
@@ -222,9 +213,9 @@ export default function WeekCalendar({
                   <TodayMorySvg size={40} />
                 </S.SvgContainer>
               )}
-              
+
               {/* 파란색 배경이 있는 컨테이너 */}
-              <S.BlueBgContainer 
+              <S.BlueBgContainer
                 isToday={isToday}
                 borderWidth={3}
                 borderColor="#1D6AA1"
@@ -240,7 +231,7 @@ export default function WeekCalendar({
                 <S.WeekdayText color={weekdayColor}>
                   {WEEKDAYS[index]}
                 </S.WeekdayText>
-                
+
                 {/* 날짜 원형 */}
                 <S.DateCircleContainer>
                   <S.GradientBackground

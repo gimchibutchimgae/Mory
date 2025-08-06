@@ -12,12 +12,11 @@ export const options = { headerShown: false };
 
 export default function ProfileScreen() {
   const { userName, userPersonality1, userPersonality2 } = useUser();
-  const { signOut, deleteAccount } = useAuth();
+  const { signOut, deleteAccount, userEmail } = useAuth();
 
-  // 임시 데이터 (UserContext에서 가져온 데이터로 대체)
   const user = {
     name: userName || '사용자',
-    email: 'choyoung0711@gamil.com',
+    email: userEmail || '이메일 없음',
   };
 
   const handleLogout = () => {
