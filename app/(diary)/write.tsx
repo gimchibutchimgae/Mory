@@ -31,6 +31,9 @@ export default function DiaryWriteScreen() {
   const today = getKSTToday();
   const formattedDate = formatKSTDate(today);
 
+  // 노트 라인 개수 (화면에 보이는 줄 수)
+  const numberOfLines = 15;
+
   const handleSubmit = async () => {
     if (!title.trim()) {
       Alert.alert('알림', '제목을 입력해주세요.');
@@ -66,15 +69,15 @@ export default function DiaryWriteScreen() {
 
   return (
     <S.Container>
-      <S.Header>
-        <S.DateText>{formattedDate}</S.DateText>
-      </S.Header>
-      
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          <S.Header>
+            <S.DateText>{formattedDate}</S.DateText>
+          </S.Header>
+          
           <S.ContentContainer>
             <S.TitleContainer>
               <S.TitleLabel>제목:</S.TitleLabel>
@@ -92,6 +95,11 @@ export default function DiaryWriteScreen() {
             <S.ContentArea onPress={() => {
               contentInputRef.current?.focus();
             }}>
+              <S.NoteLinesContainer>
+                {Array.from({ length: numberOfLines }, (_, index) => (
+                  <S.NoteLine key={index} />
+                ))}
+              </S.NoteLinesContainer>
               <S.ContentInput
                 ref={contentInputRef}
                 value={content}
