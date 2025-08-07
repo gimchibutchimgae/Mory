@@ -237,13 +237,15 @@ export default function MonthCalendar() {
       )}
 
       {/* Write 버튼 - 일기 작성 화면으로 이동 */}
-      <S.WriteButton
-        onPress={() => {
-          router.push('/(diary)/write' as any);
-        }}
-      >
-        <WriteSvg size={20} />
-      </S.WriteButton>
+      {!hasTodayDiary && (
+        <S.WriteButton
+          onPress={() => {
+            router.push('/(diary)/write' as any);
+          }}
+        >
+          <WriteSvg size={20} />
+        </S.WriteButton>
+      )}
     </S.Container>
   );
 }
