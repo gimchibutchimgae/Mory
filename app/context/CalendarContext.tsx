@@ -42,7 +42,6 @@ export function CalendarProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       return;
     }
-        
     setLoading(true);
     setError(null);
     try {
