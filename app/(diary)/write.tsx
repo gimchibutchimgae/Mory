@@ -1,4 +1,6 @@
+import { useAuth } from '@/app/context/AuthContext';
 import * as S from '@/components/ui/StyledDiary';
+import { diaryAPI } from '@/services/api';
 import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, TextInput } from 'react-native';
@@ -28,6 +30,7 @@ export default function DiaryWriteScreen() {
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const contentInputRef = useRef<TextInput>(null);
+  const { token } = useAuth();
   const today = getKSTToday();
   const formattedDate = formatKSTDate(today);
 
@@ -45,18 +48,31 @@ export default function DiaryWriteScreen() {
       return;
     }
 
+    if (!token) {
+      Alert.alert('오류', '로그인이 필요합니다.');
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      // TODO: API 호출로 일기 저장
-      console.log('일기 저장:', { title: title.trim(), content: content.trim() });
+      const diaryData = {
+        title: title.trim(),
+        content: content.trim()
+      };
+
+      const response = await diaryAPI.saveDiary(diaryData, token);
       
-      Alert.alert('완료', '일기가 저장되었습니다.', [
-        {
-          text: '확인',
-          onPress: () => router.back(),
-        },
-      ]);
+      // 응답에서 diaryId를 추출 (API 응답 구조에 따라 조정 필요)
+      const diaryId = response.id || response.diaryId;
+      
+      if (diaryId) {
+        // 대기화면으로 이동하면서 diaryId 전달
+        router.replace(`/(diary)/waiting?diaryId=${diaryId}`);
+      } else {
+        throw new Error('일기 ID를 받지 못했습니다.');
+      }
+      
     } catch (error) {
       console.error('일기 저장 오류:', error);
       Alert.alert('오류', '일기 저장에 실패했습니다. 다시 시도해주세요.');
