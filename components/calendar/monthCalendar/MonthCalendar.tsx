@@ -1,6 +1,7 @@
 import { useCalendar } from '@/app/context/CalendarContext';
 import SpeechBubble from '@/components/ui/SpeechBubble/SpeechBubble';
 import { mapAPIEmotionToDayState } from '@/utils/emotionMapper';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import Svg, { Path } from 'react-native-svg';
@@ -75,6 +76,7 @@ const WriteSvg = ({ size = 24 }: { size?: number }) => (
 
 export default function MonthCalendar() {
   const { monthData, fetchMonthData, loading } = useCalendar();
+  const router = useRouter();
   
   // KST 기준으로 오늘 날짜 계산
   const today = getKSTToday();
@@ -224,8 +226,7 @@ export default function MonthCalendar() {
       {/* Write 버튼 - 일기 작성 화면으로 이동 */}
       <S.WriteButton
         onPress={() => {
-          // 일기 작성 화면으로 이동하는 로직
-          console.log('일기 작성하기');
+          router.push('/(diary)/write' as any);
         }}
       >
         <WriteSvg size={20} />
