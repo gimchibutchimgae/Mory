@@ -73,6 +73,9 @@ export default function DiaryWriteScreen() {
         style={{ flex: 1 }} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
+        <S.CancelIconButton onPress={() => router.back()}>
+          <S.CancelIcon source={require('@/assets/icons/cancel.svg')} />
+        </S.CancelIconButton>
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
           <S.Header>
             <S.DateText>{formattedDate}</S.DateText>
@@ -115,10 +118,6 @@ export default function DiaryWriteScreen() {
         </ScrollView>
         
         <S.ButtonContainer>
-          <S.BackButton onPress={() => router.back()}>
-            <S.BackButtonText>취소</S.BackButtonText>
-          </S.BackButton>
-          
           <S.SubmitButton 
             onPress={handleSubmit} 
             disabled={!canSubmit}
@@ -126,6 +125,9 @@ export default function DiaryWriteScreen() {
             <S.SubmitButtonText disabled={!canSubmit}>
               {isSubmitting ? '저장 중...' : '완료'}
             </S.SubmitButtonText>
+            <S.SubmitButtonIcon 
+              source={require('@/assets/icons/next.svg')}
+              disabled={!canSubmit} />
           </S.SubmitButton>
         </S.ButtonContainer>
       </KeyboardAvoidingView>
