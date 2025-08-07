@@ -85,7 +85,7 @@ export default function DiaryWriteScreen() {
                 value={title}
                 onChangeText={setTitle}
                 placeholder="제목을 입력하세요"
-                placeholderTextColor="#999"
+                placeholderTextColor="#717171"
                 maxLength={100}
                 returnKeyType="next"
                 onSubmitEditing={() => contentInputRef.current?.focus()}
@@ -105,7 +105,7 @@ export default function DiaryWriteScreen() {
                 value={content}
                 onChangeText={setContent}
                 placeholder="오늘 하루 어땠나요? 자유롭게 써보세요."
-                placeholderTextColor="#999"
+                placeholderTextColor="#717171"
                 multiline
                 scrollEnabled={false}
                 textAlignVertical="top"
