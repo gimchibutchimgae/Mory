@@ -15,6 +15,25 @@ export const Header = styled.View`
   border-top-color: #D3D2CE;
   border-bottom-width: 1px;
   border-bottom-color: #D3D2CE;
+  position: relative;
+`;
+
+// 취소 아이콘 버튼
+export const CancelIconButton = styled(Pressable)`
+  position: absolute;
+  top: 6px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+`;
+
+// 취소 아이콘 이미지
+export const CancelIcon = styled.Image`
+  width: 40px;
+  height: 40px;
 `;
 
 // 날짜 텍스트
@@ -110,41 +129,32 @@ export const ContentInput = styled(TextInput)`
 // 버튼 컨테이너
 export const ButtonContainer = styled.View`
   padding: 20px;
-  border-top-width: 1px;
-  border-top-color: #D3D2CE;
 `;
 
 // 제출 버튼
 export const SubmitButton = styled(Pressable)<{ disabled: boolean }>`
-  background-color: ${props => props.disabled ? '#D3D2CE' : '#6B4E8C'};
-  padding: 15px;
-  border-radius: 8px;
+  flex-direction: row;
+  justify-content: center;
+  background-color: ${props => props.disabled ? 'none' : '#002851'};
+  width: 153px;
+  padding: 20px;
+  border-radius: 50px;
   align-items: center;
+  align-self: flex-end;
 `;
 
 // 제출 버튼 텍스트
 export const SubmitButtonText = styled.Text<{ disabled: boolean }>`
-  color: ${props => props.disabled ? '#999' : '#FFFFFF'};
-  font-size: 16px;
-  font-family: 'Pretendard';
-  font-weight: 600;
-`;
-
-// 취소 버튼
-export const BackButton = styled(Pressable)`
-  background-color: transparent;
-  padding: 15px;
-  border-radius: 8px;
-  align-items: center;
-  margin-bottom: 10px;
-  border-width: 1px;
-  border-color: #D3D2CE;
-`;
-
-// 취소 버튼 텍스트
-export const BackButtonText = styled.Text`
-  color: #666;
-  font-size: 16px;
+  color: ${props => props.disabled ? '#ffffff00' : '#FFFFFF'};
+  font-size: 24px;
   font-family: 'Pretendard';
   font-weight: 500;
+  line-height: 30px;
+`;
+
+export const SubmitButtonIcon = styled.Image<{ disabled: boolean }>`
+  tint-color: ${props => props.disabled ? '#ffffff00' : '#FFFFFF'};
+  width: 33px;
+  height: 28px;
+  margin-left: 15px;
 `;
