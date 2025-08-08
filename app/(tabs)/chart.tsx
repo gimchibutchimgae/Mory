@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
-import { TouchableOpacity, Text, View, Image, Dimensions, StyleSheet } from 'react-native';
+import {TouchableOpacity, Text, View, Image, Dimensions, StyleSheet, Platform, UIManager} from 'react-native';
 import { useState } from 'react';
+
 
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -8,6 +9,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 import * as S from '@/components/ui/StyledScreen';
+import Svg, {Path} from "react-native-svg";
 
 // 상수 정의
 const CHART_SIZE = 200;
@@ -161,7 +163,7 @@ const DiaryGallery = () => {
 
       {/* 다이어리 카드 갤러리 */}
       <View style={styles.galleryContainer}>
-        <TouchableOpacity onPress={goToPrevDay}>
+        <TouchableOpacity onPress={goToPrevDay} style={styles.leftCardTouchable}>
           <View style={[styles.card, styles.sideCard, { width: SIDE_CARD_WIDTH, height: CARD_HEIGHT }]}>
             <Image
               source={prevDiary.written ? require('@/assets/images/diary_written.png') : require('@/assets/images/diary_not_written.png')}
@@ -190,7 +192,7 @@ const DiaryGallery = () => {
           />
         </View>
 
-        <TouchableOpacity onPress={goToNextDay}>
+        <TouchableOpacity onPress={goToNextDay} style={styles.rightCardTouchable}>
           <View style={[styles.card, styles.sideCard, { width: SIDE_CARD_WIDTH, height: CARD_HEIGHT }]}>
             <Image
               source={nextDiary.written ? require('@/assets/images/diary_written.png') : require('@/assets/images/diary_not_written.png')}
