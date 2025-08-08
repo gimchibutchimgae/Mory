@@ -26,6 +26,21 @@ type DayState = 'gray' | 'red' | 'yellow' | 'green' | 'blue';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
+// 한국 시간대(KST) 기준 오늘 날짜 가져오기
+function getKSTToday(): Date {
+  const now = new Date();
+  const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return kstDate;
+}
+
+function getKSTTodayString(): string {
+  const kstToday = getKSTToday();
+  const year = kstToday.getUTCFullYear();
+  const month = String(kstToday.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(kstToday.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // 오늘 표시용 SVG 컴포넌트
 const TodayMorySvg = ({ size = 16 }: { size?: number }) => (
   <Svg width={size} height={size} viewBox="0 0 35 34" fill="none">
@@ -48,17 +63,13 @@ const WriteSvg = ({ size = 24 }: { size?: number }) => (
 
 export default function MonthCalendar() {
   const { monthData, fetchMonthData, loading } = useCalendar();
-  const [currentDate, setCurrentDate] = useState(new Date());
-
-  const today = new Date();
-  const todayString = today.toISOString().split('T')[0];
-
-  const currentMonth = currentDate.getMonth() + 1;
-  const currentYear = currentDate.getFullYear();
-
-  useEffect(() => {
-    fetchMonthData(currentMonth);
-  }, [currentMonth, fetchMonthData]);
+  const router = useRouter();
+  
+  // KST 기준으로 오늘 날짜 계산
+  const today = getKSTToday();
+  const todayString = getKSTTodayString();
+  
+  console.log('🗓️ [MonthCalendar] Date calculation - today:', today, 'todayString:', todayString, 'today.getDate():', today.getDate());
 
   const onMonthChange = (month) => {
     setCurrentDate(new Date(month.dateString));
@@ -66,17 +77,23 @@ export default function MonthCalendar() {
 
   const hasTodayDiary = useMemo(() => {
     if (!monthData) return false;
-    const todayDay = today.getDate().toString();
-    const todayEmotion = monthData[todayDay];
+    const todayDay = todayString.split('-')[2];
+    const todayDayNumber = parseInt(todayDay, 10).toString();
+    const todayEmotion = monthData[todayDayNumber];
+    console.log('🗓️ [MonthCalendar] hasTodayDiary check - todayString:', todayString, 'extracted day:', todayDayNumber, 'todayEmotion:', todayEmotion, 'result:', todayEmotion !== null && todayEmotion !== 'YET');
     return todayEmotion !== null && todayEmotion !== 'YET';
-  }, [monthData, today]);
-
+  }, [monthData, todayString]);
+  
+  // 오늘의 감정 상태 (API 데이터에서 가져오기)
   const todayEmotionState = useMemo(() => {
     if (!monthData) return 'gray';
-    const todayDay = today.getDate().toString();
-    const todayEmotion = monthData[todayDay];
-    return mapAPIEmotionToDayState(todayEmotion);
-  }, [monthData, today]);
+    const todayDay = todayString.split('-')[2];
+    const todayDayNumber = parseInt(todayDay, 10).toString();
+    const todayEmotion = monthData[todayDayNumber];
+    const mappedState = mapAPIEmotionToDayState(todayEmotion);
+    console.log('🗓️ [MonthCalendar] todayEmotionState - todayString:', todayString, 'extracted day:', todayDayNumber, 'todayEmotion:', todayEmotion, 'mappedState:', mappedState);
+    return mappedState;
+  }, [monthData, todayString]);
 
   const getEmotionForDate = (dateString: string): DayState => {
     if (!monthData) return 'gray';
@@ -104,11 +121,53 @@ export default function MonthCalendar() {
             if (!date) return null;
             const dateString = date.dateString;
             const isToday = dateString === todayString;
+            const isPastOrToday = isPast || isToday;
 
-            const emotionState = getEmotionForDate(dateString);
-            const gradientColor = gradientColors[emotionState];
-            const textColor = '#000000';
+            let gradientColor = gradientColors.gray;
+            let textColor = '#000000';
 
+            if (isToday) {
+              // 오늘 날짜 처리
+              console.log('🗓️ [MonthCalendar] Processing today - dateString:', dateString, 'isToday:', isToday);
+              console.log('🗓️ [MonthCalendar] Today values - hasTodayDiary:', hasTodayDiary, 'todayEmotionState:', todayEmotionState);
+              
+              if (hasTodayDiary) {
+                // 일기를 작성한 경우: 감정 분석 결과에 따른 색상
+                gradientColor = gradientColors[todayEmotionState];
+                textColor = '#000000';
+                console.log('🗓️ [MonthCalendar] Applied emotion color for today:', gradientColor);
+              } else {
+                // 일기를 작성하지 않은 경우: 연한 회색
+                gradientColor = ['#748593', '#748593'];
+                textColor = '#000000';
+                console.log('🗓️ [MonthCalendar] Applied gray color for today (no diary)');
+              }
+            } else if (isFuture) {
+              // 미래 날짜: 기존 회색 디자인 유지
+              gradientColor = gradientColors.gray;
+              textColor = 'rgba(115, 115, 115, 0.70)';
+            } else if (isPast && dateObj && dateObj.getMonth() === currentMonth - 1) {
+              // 과거 날짜이면서 현재 월인 경우 - API 데이터 사용
+              const dayNumber = dateObj.getDate().toString();
+              console.log('🗓️ [MonthCalendar] Processing past date:', dateString, 'dayNumber:', dayNumber, 'apiEmotion:', monthData ? monthData[dayNumber] : 'no data');
+              const apiEmotion = monthData ? monthData[dayNumber] : null;
+              const state = mapAPIEmotionToDayState(apiEmotion);
+              
+              if (state && state !== 'gray') {
+                // 감정 데이터가 있는 경우
+                gradientColor = gradientColors[state];
+                textColor = '#000000';
+                console.log('🗓️ [MonthCalendar] Applied color for day', dayNumber, ':', gradientColor);
+              } else {
+                // 감정 데이터가 없는 과거 날짜: 연한 회색
+                gradientColor = ['#748593', '#748593'];
+                textColor = '#000000';
+              }
+            } else if (isPast) {
+              // 다른 월의 과거 날짜
+              gradientColor = ['#748593', '#748593'];
+              textColor = '#000000';
+            }
             return (
               <S.DayContainer>
                 <S.GradientBackground
@@ -150,13 +209,16 @@ export default function MonthCalendar() {
         <SpeechBubble message="오늘 하루 어땠어?" />
       )}
 
-      <S.WriteButton
-        onPress={() => {
-          console.log('일기 작성하기');
-        }}
-      >
-        <WriteSvg size={20} />
-      </S.WriteButton>
+      {/* Write 버튼 - 일기 작성 화면으로 이동 */}
+      {!hasTodayDiary && (
+        <S.WriteButton
+          onPress={() => {
+            router.push('/(diary)/write' as any);
+          }}
+        >
+          <WriteSvg size={20} />
+        </S.WriteButton>
+      )}
     </S.Container>
   );
 }

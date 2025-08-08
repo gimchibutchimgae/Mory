@@ -1,4 +1,3 @@
-// context/CalendarContext.tsx (새로 생성 필요)
 import { calendarAPI, EmotionData } from '@/services/api';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
