@@ -1,6 +1,18 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import styled from 'styled-components/native';
 
+// 그라데이션 색상 정의
+export const gradientColors: Record<
+  'red' | 'yellow' | 'green' | 'blue' | 'gray',
+  string[]
+> = {
+  red: ['#FF7342', '#FE2C4D'],
+  yellow: ['#FCDD63', '#FEB821'],
+  green: ['#7AE9A0', '#4ED491'],
+  blue: ['#85B7FC', '#748CFE'],
+  gray: ['#374553', '#374553'],
+};
+
 // 메인 컨테이너
 export const Container = styled.View`
   font-family: 'Pretendard';

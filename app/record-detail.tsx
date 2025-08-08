@@ -1,7 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import Svg, { Path } from 'react-native-svg';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import Svg, { Path, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
+import { gradientColors } from '@/components/calendar/monthCalendar/style';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import api from '@/services/api';
 
 // --- Helper Functions for Semi-circle Chart ---
 const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
@@ -24,23 +28,33 @@ const describeArc = (x: number, y: number, radius: number, startAngle: number, e
 }
 
 // --- Semi-circle Chart Component ---
-const SemiCircleChart = ({ data, size, strokeWidth }: { data: { value: number, color: string }[], size: number, strokeWidth: number }) => {
+const SemiCircleChart = ({ data, size, strokeWidth }: { data: { value: number, emotion: keyof typeof gradientColors }[], size: number, strokeWidth: number }) => {
     const totalValue = data.reduce((acc, item) => acc + item.value, 0);
     const radius = (size - strokeWidth) / 2;
-    let startAngle = 180; // Start from the left side
+    let startAngle = 180;
 
     return (
         <Svg width={size} height={size / 2 + strokeWidth} viewBox={`0 0 ${size} ${size / 2 + strokeWidth}`}>
-            {/* Background Arc */}
+            <Defs>
+                {data.map((item, index) => {
+                    const gradientId = `grad${index}`;
+                    const colors = gradientColors[item.emotion];
+                    return (
+                        <SvgLinearGradient key={gradientId} id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+                            <Stop offset="0%" stopColor={colors[0]} />
+                            <Stop offset="100%" stopColor={colors[1]} />
+                        </SvgLinearGradient>
+                    );
+                })}
+            </Defs>
             <Path
                 d={describeArc(size / 2, size / 2, radius, 180, 360)}
                 stroke="rgba(255, 255, 255, 0.1)"
                 strokeWidth={strokeWidth}
                 fill="none"
             />
-            {/* Data Arcs */}
             {data.map((item, index) => {
-                const angle = (item.value / totalValue) * 180; // Map value to 180 degrees
+                const angle = (item.value / totalValue) * 180;
                 const endAngle = startAngle + angle;
                 const path = describeArc(size / 2, size / 2, radius, startAngle, endAngle);
                 startAngle = endAngle;
@@ -48,7 +62,7 @@ const SemiCircleChart = ({ data, size, strokeWidth }: { data: { value: number, c
                     <Path
                         key={index}
                         d={path}
-                        stroke={item.color}
+                        stroke={`url(#grad${index})`}
                         strokeWidth={strokeWidth}
                         fill="none"
                     />
@@ -58,39 +72,69 @@ const SemiCircleChart = ({ data, size, strokeWidth }: { data: { value: number, c
     );
 };
 
-// --- Main Screen Component ---
-const fakeData = {
+interface AnalysisData {
+  primary_emotion_type: string;
+  emotions: {
+    RED: string[];
+    YELLOW: string[];
+    GREEN: string[];
+    BLUE: string[];
+  };
+  ratio: [string, number][];
+  diary: {
+    year: number;
+    month: number;
+    day: number;
+  };
+}
+
+const mockAnalysisData: AnalysisData = {
   primary_emotion_type: 'YELLOW',
   emotions: {
-    RED: ['화남', '짜증'],
-    YELLOW: ['행복', '기쁨', '즐거움'],
-    GREEN: ['평온', '안정'],
-    BLUE: ['슬픔'],
+    RED: ['격분한', '초조한'],
+    YELLOW: ['역겨운'],
+    BLUE: ['긍정적인'],
+    GREEN: ['태평한'],
   },
   ratio: [
-    ['YELLOW', 0.6],
-    ['RED', 0.2],
-    ['GREEN', 0.15],
-    ['BLUE', 0.05],
+    ['RED', 0.6],
+    ['BLUE', 0.2],
+    ['YELLOW', 0.1],
+    ['GREEN', 0.1],
   ],
   diary: {
     year: 2025,
     month: 7,
-    day: 9,
+    day: 13,
   },
 };
 
 export default function RecordDetailScreen() {
   const router = useRouter();
+  const { diaryId } = useLocalSearchParams();
+  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(mockAnalysisData);
+  const [loading, setLoading] = useState(false);
 
-  const getEmotionColor = (emotion: string) => {
-    switch (emotion) {
-      case 'RED': return '#FF8A7A';
-      case 'YELLOW': return '#FFD36A';
-      case 'GREEN': return '#7EDFA2';
-      case 'BLUE': return '#A2B6FF';
-      default: return '#fff';
-    }
+  // useEffect(() => {
+  //   const fetchAnalysis = async () => {
+  //     try {
+  //       if (diaryId) {
+  //         const response = await api.get(`/analysis/${diaryId}`);
+  //         setAnalysisData(response.data);
+  //       }
+  //     } catch (error) {
+  //       console.error('Failed to fetch analysis data:', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchAnalysis();
+  // }, [diaryId]);
+
+  const getEmotionGradient = (emotion: string): string[] => {
+    const emotionKey = emotion.toLowerCase() as keyof typeof gradientColors;
+    return gradientColors[emotionKey] || gradientColors.gray;
   };
 
   const getEmotionText = (emotion: string) => {
@@ -103,64 +147,99 @@ export default function RecordDetailScreen() {
     }
   };
 
-  const primaryEmotionColor = getEmotionColor(fakeData.primary_emotion_type);
-  const primaryEmotionText = getEmotionText(fakeData.primary_emotion_type);
+  if (loading) {
+    return <View style={styles.loadingContainer}><ActivityIndicator size="large" color="#fff" /></View>;
+  }
 
-  const semiCircleData = [
-    { value: (fakeData.ratio.find(([e]) => e === 'BLUE')?.[1] || 0) * 100, color: getEmotionColor('BLUE') },
-    { value: (fakeData.ratio.find(([e]) => e === 'RED')?.[1] || 0) * 100, color: getEmotionColor('RED') },
-    { value: (fakeData.ratio.find(([e]) => e === 'GREEN')?.[1] || 0) * 100, color: getEmotionColor('GREEN') },
-    { value: (fakeData.ratio.find(([e]) => e === 'YELLOW')?.[1] || 0) * 100, color: getEmotionColor('YELLOW') },
-  ];
+  if (!analysisData) {
+    return (
+        <View style={styles.loadingContainer}>
+            <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+                <MaterialCommunityIcons name="close" size={28} color="#E6F1FF" />
+            </TouchableOpacity>
+            <Text style={styles.date}>분석 데이터가 없습니다.</Text>
+        </View>
+    );
+  }
+
+  const primaryEmotionGradient = getEmotionGradient(analysisData.primary_emotion_type);
+  const primaryEmotionText = getEmotionText(analysisData.primary_emotion_type);
+
+  const semiCircleData = analysisData.ratio.map(([emotion, value]) => ({
+    value: value * 100,
+    emotion: emotion.toLowerCase() as keyof typeof gradientColors,
+  }));
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#0A2940' }} contentContainerStyle={{ paddingBottom: 32 }}>
-      <View style={styles.closeRow}>
-        <Text style={styles.closeBtn} onPress={() => router.push('/chart')}>✕</Text>
-      </View>
-      <Text style={styles.date}>{`${fakeData.diary.year}년 ${fakeData.diary.month}월 ${fakeData.diary.day}일`}</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+        <MaterialCommunityIcons name="close" size={28} color="#E6F1FF" />
+      </TouchableOpacity>
+
+      <Text style={styles.date}>{`${analysisData.diary.year}년 ${analysisData.diary.month}월 ${analysisData.diary.day}일`}</Text>
+
       <View style={styles.chartBox}>
-        <View style={{ marginTop: 20 }}>
-          <SemiCircleChart data={semiCircleData} size={200} strokeWidth={40} />
-        </View>
+        <SemiCircleChart data={semiCircleData} size={280} strokeWidth={45} />
       </View>
-      <View style={[styles.emotionRow, { marginTop: 40 }]}>
-        {fakeData.ratio.map(([emotion, value]) => (
+
+      <View style={styles.emotionRow}>
+        {analysisData.ratio.map(([emotion, value]) => (
           <View key={emotion} style={styles.emotionItem}>
-            <View style={[styles.circle, { backgroundColor: getEmotionColor(emotion) }]} />
+            <LinearGradient
+              colors={getEmotionGradient(emotion)}
+              style={styles.circle}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            />
             <Text style={styles.emotionPercent}>{`${Math.round(value * 100)}%`}</Text>
           </View>
         ))}
       </View>
+
       <View style={styles.bubbleBox}>
-        <View style={[styles.bubbleIcon, { backgroundColor: primaryEmotionColor }]} />
-        <Text style={styles.bubbleText}>이 날은 굉장히 <Text style={{ color: primaryEmotionColor }}>{primaryEmotionText}</Text> 하루였군요!!</Text>
+        <LinearGradient
+          colors={primaryEmotionGradient}
+          style={styles.bubbleIcon}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+        <Text style={styles.bubbleText}>이 날은 굉장히 <Text style={{ color: primaryEmotionGradient[1], fontWeight: 'bold' }}>{primaryEmotionText}</Text> 하루였군요!!</Text>
       </View>
-      <Text style={styles.sectionTitle}>감정이 들어난 단어들</Text>
-      {Object.entries(fakeData.emotions)
+
+      <Text style={styles.sectionTitle}>감정이 드러난 단어들</Text>
+
+      {Object.entries(analysisData.emotions)
         .sort(([emotionA], [emotionB]) => {
-          const ratioA = fakeData.ratio.find(r => r[0] === emotionA)?.[1] || 0;
-          const ratioB = fakeData.ratio.find(r => r[0] === emotionB)?.[1] || 0;
-          return ratioB - ratioA; // Descending order
+          const ratioA = analysisData.ratio.find(r => r[0] === emotionA)?.[1] || 0;
+          const ratioB = analysisData.ratio.find(r => r[0] === emotionB)?.[1] || 0;
+          return ratioB - ratioA;
         })
         .map(([emotion, words]) => {
-        if (words.length === 0) return null;
-        const color = getEmotionColor(emotion);
-        const emotionRatio = fakeData.ratio.find(r => r[0] === emotion);
-        return (
-          <View key={emotion} style={styles.wordBox}>
-            <View style={styles.wordHeader}>
-              <Text style={[styles.wordTitle, { color }]}>{getEmotionText(emotion)}</Text>
-              <Text style={styles.wordPercent}>{emotionRatio ? `${Math.round(emotionRatio[1] * 100)}%` : ''}</Text>
+          if (words.length === 0) return null;
+          const gradient = getEmotionGradient(emotion);
+          const emotionRatio = analysisData.ratio.find(r => r[0] === emotion);
+          return (
+            <View key={emotion} style={styles.wordBox}>
+              <View style={styles.wordHeader}>
+                <Text style={[styles.wordTitle, { color: gradient[1] }]}>{getEmotionText(emotion)}</Text>
+                <Text style={styles.wordPercent}>{emotionRatio ? `${Math.round(emotionRatio[1] * 100)}%` : ''}</Text>
+              </View>
+              <View style={styles.wordList}>
+                {words.map((word, index) => (
+                  <LinearGradient
+                    key={index}
+                    colors={gradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.wordTag}
+                  >
+                    <Text style={styles.wordItem}>{word}</Text>
+                  </LinearGradient>
+                ))}
+              </View>
             </View>
-            <View style={styles.wordList}>
-              {words.map((word, index) => (
-                <Text key={index} style={styles.wordItem}>• {word}</Text>
-              ))}
-            </View>
-          </View>
-        );
-      })}
+          );
+        })}
     </ScrollView>
   );
 }
@@ -168,113 +247,133 @@ export default function RecordDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A2940',
-    paddingTop: 40,
-    paddingHorizontal: 16,
+    backgroundColor: '#0A192F',
   },
-  closeRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    marginBottom: 16,
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#0A192F',
+    justifyContent: 'center',
+  },
+  contentContainer: {
+    paddingTop: 60,
+    paddingHorizontal: 24,
+    paddingBottom: 48,
   },
   closeBtn: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+    padding: 8,
   },
   date: {
-    color: '#fff',
-    fontSize: 22,
+    color: '#E6F1FF',
+    fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
+    fontFamily: 'Pretendard',
   },
   chartBox: {
-    backgroundColor: '#112B44',
-    borderRadius: 20,
+    backgroundColor: 'rgba(20, 39, 64, 0.6)',
+    borderRadius: 24,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 6,
-    height: 220,
+    justifyContent: 'flex-end',
+    paddingTop: 24,
+    paddingHorizontal: 16,
+    marginBottom: 24,
+    overflow: 'hidden',
   },
   emotionRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-    marginBottom: 24,
-    paddingHorizontal: 10,
-    marginTop: 32,
+    justifyContent: 'space-around',
+    marginBottom: 32,
+    paddingHorizontal: 16,
   },
   emotionItem: {
     alignItems: 'center',
-    marginHorizontal: 10,
-    marginBottom: 10,
   },
   circle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    marginBottom: 4,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginBottom: 8,
   },
   emotionPercent: {
-    color: '#fff',
-    fontSize: 19, // 퍼센트 글자 크기 증가
+    color: '#E6F1FF',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Pretendard',
   },
   bubbleBox: {
-    backgroundColor: '#112B44',
-    borderRadius: 16,
+    backgroundColor: 'rgba(20, 39, 64, 0.6)',
+    borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    marginBottom: 32,
+    padding: 20,
+    marginBottom: 40,
   },
   bubbleIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    marginRight: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   bubbleText: {
-    color: '#fff',
-    fontSize: 19, // 한마디 글자 크기 증가
+    flex: 1,
+    color: '#E6F1FF',
+    fontSize: 16,
     fontWeight: '500',
+    fontFamily: 'Pretendard',
+    lineHeight: 24,
   },
   sectionTitle: {
-    color: '#fff',
-    fontSize: 21, // 섹션 타이틀 글자 크기 증가
+    color: '#E6F1FF',
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 24,
-    textAlign: 'center',
+    marginBottom: 16,
+    fontFamily: 'Pretendard',
   },
   wordBox: {
-    backgroundColor: '#112B44',
-    borderRadius: 16,
-    paddingVertical: 28, // 상하 패딩 더 증가
-    paddingHorizontal: 24, // 좌우 패딩 더 증가
-    marginBottom: 32,
+    backgroundColor: 'rgba(20, 39, 64, 0.6)',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
   },
   wordHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20, // 헤더와 리스트 간 간격 더 증가
+    marginBottom: 16,
   },
   wordTitle: {
-    fontSize: 19, // 글자 크기 증가
+    fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: 'Pretendard',
   },
   wordPercent: {
-    color: '#fff',
-    fontSize: 19, // 글자 크기 증가
-    fontWeight: 'bold',
+    color: '#E6F1FF',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Pretendard',
   },
   wordList: {
-    marginLeft: 12, // 리스트 좌측 여백 증가
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
   },
   wordItem: {
-    color: '#fff',
-    fontSize: 19, // 글자 크기 증가
-    marginBottom: 12, // 단어 간 간격 더 증가
+    color: '#0A192F',
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Pretendard',
+  },
+  wordTag: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
 });

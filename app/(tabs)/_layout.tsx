@@ -16,7 +16,7 @@ export default function TabLayout() {
           tabBarStyle: { display: 'none' }, // 기본 탭바 숨김
         }}>
         <Tabs.Screen
-          name="chart"
+          name="record"
           options={{
             title: '기록',
             tabBarIcon: ({ color }) => <IconSvg name="record" />,

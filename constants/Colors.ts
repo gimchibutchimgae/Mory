@@ -4,11 +4,11 @@
  */
 
 export const Colors = {
-  primaryBackground: '#1a2a4a',
-  secondaryBackground: '#2a3a5a',
+  primaryBackground: '#00223D',
+  secondaryBackground: '#00274e',
   white: '#FFFFFF',
   black: '#000000',
-  yellow: '#FFFF00',
+  yellow: '#FFE600',
   gray: '#808080',
   lightGray: '#AAAAAA',
   darkGray: '#555555',
