@@ -1,11 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import Svg, { Path, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { gradientColors } from '@/components/calendar/monthCalendar/style';
-
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import api from '@/services/api';
 
 // --- Helper Functions for Semi-circle Chart ---
 const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
@@ -72,30 +72,65 @@ const SemiCircleChart = ({ data, size, strokeWidth }: { data: { value: number, e
     );
 };
 
-// --- Main Screen Component ---
-const fakeData = {
+interface AnalysisData {
+  primary_emotion_type: string;
+  emotions: {
+    RED: string[];
+    YELLOW: string[];
+    GREEN: string[];
+    BLUE: string[];
+  };
+  ratio: [string, number][];
+  diary: {
+    year: number;
+    month: number;
+    day: number;
+  };
+}
+
+const mockAnalysisData: AnalysisData = {
   primary_emotion_type: 'YELLOW',
   emotions: {
-    RED: ['화남', '짜증'],
-    YELLOW: ['행복', '기쁨', '즐거움'],
-    GREEN: ['평온', '안정'],
-    BLUE: ['슬픔'],
+    RED: ['격분한', '초조한'],
+    YELLOW: ['역겨운'],
+    BLUE: ['긍정적인'],
+    GREEN: ['태평한'],
   },
   ratio: [
-    ['YELLOW', 0.6],
-    ['RED', 0.2],
-    ['GREEN', 0.15],
-    ['BLUE', 0.05],
+    ['RED', 0.6],
+    ['BLUE', 0.2],
+    ['YELLOW', 0.1],
+    ['GREEN', 0.1],
   ],
   diary: {
     year: 2025,
     month: 7,
-    day: 9,
+    day: 13,
   },
 };
 
 export default function RecordDetailScreen() {
   const router = useRouter();
+  const { diaryId } = useLocalSearchParams();
+  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(mockAnalysisData);
+  const [loading, setLoading] = useState(false);
+
+  // useEffect(() => {
+  //   const fetchAnalysis = async () => {
+  //     try {
+  //       if (diaryId) {
+  //         const response = await api.get(`/analysis/${diaryId}`);
+  //         setAnalysisData(response.data);
+  //       }
+  //     } catch (error) {
+  //       console.error('Failed to fetch analysis data:', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchAnalysis();
+  // }, [diaryId]);
 
   const getEmotionGradient = (emotion: string): string[] => {
     const emotionKey = emotion.toLowerCase() as keyof typeof gradientColors;
@@ -112,29 +147,43 @@ export default function RecordDetailScreen() {
     }
   };
 
-  const primaryEmotionGradient = getEmotionGradient(fakeData.primary_emotion_type);
-  const primaryEmotionText = getEmotionText(fakeData.primary_emotion_type);
+  if (loading) {
+    return <View style={styles.loadingContainer}><ActivityIndicator size="large" color="#fff" /></View>;
+  }
 
-  const semiCircleData = fakeData.ratio.map(([emotion, value]) => ({
+  if (!analysisData) {
+    return (
+        <View style={styles.loadingContainer}>
+            <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+                <MaterialCommunityIcons name="close" size={28} color="#E6F1FF" />
+            </TouchableOpacity>
+            <Text style={styles.date}>분석 데이터가 없습니다.</Text>
+        </View>
+    );
+  }
+
+  const primaryEmotionGradient = getEmotionGradient(analysisData.primary_emotion_type);
+  const primaryEmotionText = getEmotionText(analysisData.primary_emotion_type);
+
+  const semiCircleData = analysisData.ratio.map(([emotion, value]) => ({
     value: value * 100,
     emotion: emotion.toLowerCase() as keyof typeof gradientColors,
   }));
 
-  // @ts-ignore
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
         <MaterialCommunityIcons name="close" size={28} color="#E6F1FF" />
       </TouchableOpacity>
 
-      <Text style={styles.date}>{`${fakeData.diary.year}년 ${fakeData.diary.month}월 ${fakeData.diary.day}일`}</Text>
+      <Text style={styles.date}>{`${analysisData.diary.year}년 ${analysisData.diary.month}월 ${analysisData.diary.day}일`}</Text>
 
       <View style={styles.chartBox}>
         <SemiCircleChart data={semiCircleData} size={280} strokeWidth={45} />
       </View>
 
       <View style={styles.emotionRow}>
-        {fakeData.ratio.map(([emotion, value]) => (
+        {analysisData.ratio.map(([emotion, value]) => (
           <View key={emotion} style={styles.emotionItem}>
             <LinearGradient
               colors={getEmotionGradient(emotion)}
@@ -159,18 +208,16 @@ export default function RecordDetailScreen() {
 
       <Text style={styles.sectionTitle}>감정이 드러난 단어들</Text>
 
-      {Object.entries(fakeData.emotions)
+      {Object.entries(analysisData.emotions)
         .sort(([emotionA], [emotionB]) => {
-          const ratioA = fakeData.ratio.find(r => r[0] === emotionA)?.[1] || 0;
-          const ratioB = fakeData.ratio.find(r => r[0] === emotionB)?.[1] || 0;
-          // @ts-ignore
+          const ratioA = analysisData.ratio.find(r => r[0] === emotionA)?.[1] || 0;
+          const ratioB = analysisData.ratio.find(r => r[0] === emotionB)?.[1] || 0;
           return ratioB - ratioA;
         })
         .map(([emotion, words]) => {
           if (words.length === 0) return null;
           const gradient = getEmotionGradient(emotion);
-          const emotionRatio = fakeData.ratio.find(r => r[0] === emotion);
-          // @ts-ignore
+          const emotionRatio = analysisData.ratio.find(r => r[0] === emotion);
           return (
             <View key={emotion} style={styles.wordBox}>
               <View style={styles.wordHeader}>
@@ -200,10 +247,15 @@ export default function RecordDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A192F', // 더 깊고 세련된 네이비 색상
+    backgroundColor: '#0A192F',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#0A192F',
+    justifyContent: 'center',
   },
   contentContainer: {
-    paddingTop: 60, // SafeArea 대응
+    paddingTop: 60,
     paddingHorizontal: 24,
     paddingBottom: 48,
   },
@@ -219,7 +271,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 24, // 날짜와 차트 박스 간 간격 증가
+    marginBottom: 24,
     fontFamily: 'Pretendard',
   },
   chartBox: {
@@ -230,13 +282,13 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingHorizontal: 16,
     marginBottom: 24,
-    overflow: 'hidden', // 하단이 둥근 모서리를 넘어가지 않도록
+    overflow: 'hidden',
   },
   emotionRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 32,
-    paddingHorizontal: 16, // 좌우 여백 추가
+    paddingHorizontal: 16,
   },
   emotionItem: {
     alignItems: 'center',
@@ -322,6 +374,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 16,
-    overflow: 'hidden', // for LinearGradient border-radius
+    overflow: 'hidden',
   },
 });
