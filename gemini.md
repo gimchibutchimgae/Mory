@@ -30,6 +30,98 @@
 
 JWT가 존재하지 않거나, 만료되었다면 `Unauthorized Error`
 
+- 테스트 데이터 생성 쿼리
+    
+    ```sql
+    INSERT INTO diary (id, title, content, createdAt, year, month, day, userId)
+    VALUES 
+    (20, '행복한 하루', '오늘은 기분이 좋았다.', NOW(), 2025, 8, 1, 7),
+    (21, '짜증나는 하루', '스트레스를 많이 받았다.', NOW(), 2025, 8, 2, 7),
+    (22, '짜증나는 하루', '스트레스를 많이 받았다.', NOW(), 2025, 8, 3, 7),
+    (23, '짜증나는 하루', '스트레스를 많이 받았다.', NOW(), 2025, 8, 4, 7),
+    (24, '짜증나는 하루', '스트레스를 많이 받았다.', NOW(), 2025, 8, 5, 7);
+    
+    INSERT INTO analysis (id, diaryId, primary_emotion_type, feel, ratio)
+    VALUES 
+    (20, 20, 'GREEN',
+        JSON_OBJECT(
+            'RED', JSON_ARRAY(),
+            'YELLOW', JSON_ARRAY(),
+            'BLUE', JSON_ARRAY('행복한', '만족스러운'),
+            'GREEN', JSON_ARRAY('편안한', '고요한')
+        ),
+        JSON_OBJECT(
+            'RED', 0,
+            'YELLOW', 0.1,
+            'BLUE', 0.2,
+            'GREEN', 0.7
+        )
+    ),
+    (21, 21, 'RED',
+        JSON_OBJECT(
+            'RED', JSON_ARRAY('스트레스 받는', '화가 치밀어 오른'),
+            'YELLOW', JSON_ARRAY(),
+            'BLUE', JSON_ARRAY(),
+            'GREEN', JSON_ARRAY()
+        ),
+        JSON_OBJECT(
+            'RED', 0.7,
+            'YELLOW', 0.1,
+            'BLUE', 0.1,
+            'GREEN', 0.1
+        )
+    ),
+    (22, 22, 'RED',
+        JSON_OBJECT(
+            'RED', JSON_ARRAY('스트레스 받는', '화가 치밀어 오른'),
+            'YELLOW', JSON_ARRAY(),
+            'BLUE', JSON_ARRAY(),
+            'GREEN', JSON_ARRAY()
+        ),
+        JSON_OBJECT(
+            'RED', 0.7,
+            'YELLOW', 0.1,
+            'BLUE', 0.1,
+            'GREEN', 0.1
+        )
+    ),
+    (23, 23, 'GREEN',
+        JSON_OBJECT(
+            'RED', JSON_ARRAY('스트레스 받는', '화가 치밀어 오른'),
+            'YELLOW', JSON_ARRAY(),
+            'BLUE', JSON_ARRAY(),
+            'GREEN', JSON_ARRAY()
+        ),
+       JSON_OBJECT(
+            'RED', 0.7,
+            'YELLOW', 0.1,
+            'BLUE', 0.1,
+            'GREEN', 0.1
+        )
+    ),
+    (24, 24, 'YELLOW',
+        JSON_OBJECT(
+            'RED', JSON_ARRAY('스트레스 받는', '화가 치밀어 오른'),
+            'YELLOW', JSON_ARRAY(),
+            'BLUE', JSON_ARRAY(),
+            'GREEN', JSON_ARRAY()
+        ),
+       JSON_OBJECT(
+            'RED', 0.7,
+            'YELLOW', 0.1,
+            'BLUE', 0.1,
+            'GREEN', 0.1
+        )
+    );
+    
+    update diary SET analysisId=20 where id=20;
+    update diary SET analysisId=21 where id=21;
+    update diary SET analysisId=22 where id=22;
+    update diary SET analysisId=23 where id=23;
+    update diary SET analysisId=24 where id=24;
+    ```
+    
+
 # [ Get ]
 
 - 🔒Google 로그인 `/auth/google`
@@ -227,6 +319,37 @@ JWT가 존재하지 않거나, 만료되었다면 `Unauthorized Error`
     }
     ```
     
+- 🗓️월간 분석 결과 조회 `/monthly-analysis/:month`
+    
+    ```json
+    {
+        "month": 8,
+        // 감정 비율 평균
+        "ratios": {
+            "RED": 0.4,
+            "GREEN": 0.15,
+            "YELLOW": 0.07,
+            "BLUE": 0.08
+        },
+        // 감정이 존재하는 일기 수
+        "emotions_count": {
+            "RED": 4,
+            "YELLOW": 0,
+            "BLUE": 1,
+            "GREEN": 1
+        },
+        // 전달에 비해 증가한 감정
+        // 음수 -> 감소한 감정
+        "emotions_count_delta": {
+            "RED": 4,
+            "YELLOW": 0,
+            "BLUE": 1,
+            "GREEN": 1
+        },
+        "id": 5
+    }
+    ```
+    
 
 # [ Post ]
 
@@ -247,7 +370,7 @@ JWT가 존재하지 않거나, 만료되었다면 `Unauthorized Error`
     
     ```json
     {
-        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJrb3JlYW4xNzkwQGdtYWlsLmNvbSIsIm5hbWUiOiLsnbTsnqztl4wiLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MTc5NjE2NiwiZXhwIjoxNzUxODEwNTY2fQ.8__MrfJ0oq20P2JU7YA2FhLMRdLVEE6NDtuudQA6i-8"
+    	accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJrb3JlYW4xNzkwQGdtYWlsLmNvbSIsIm5hbWUiOiLsnbTsnqztl4wiLCJyb2xlIjoidXNlciIsImlhdCI6MTc1MTc5NjE2NiwiZXhwIjoxNzUxODEwNTY2fQ.8__MrfJ0oq20P2JU7YA2FhLMRdLVEE6NDtuudQA6i-8"
     }
     ```
     
