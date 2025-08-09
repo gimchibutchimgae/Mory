@@ -8,7 +8,7 @@ export default function NavBar() {
   const pathname = usePathname();
 
   const tabs = [
-    { name: 'chart', title: '기록', route: '/(tabs)/chart', icon: 'record' },
+    { name: 'record', title: '기록', route: '/(tabs)/record', icon: 'record' },
     { name: 'index', title: '홈', route: '/(tabs)/', icon: 'home' },
     { name: 'profile', title: '프로필', route: '/(tabs)/profile', icon: 'profile' },
   ];
