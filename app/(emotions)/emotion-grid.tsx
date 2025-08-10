@@ -370,7 +370,7 @@ export default function EmotionGridScreen() {
           <Text
             style={{
               color: '#FFFFFF',
-              fontSize: size > 60 ? 9 : 7,
+              fontSize: size * 0.15, // 원 크기의 15% 비율로 폰트 크기 설정
               fontWeight: '600',
               textAlign: 'center',
               textShadowColor: 'rgba(0, 0, 0, 0.8)',
