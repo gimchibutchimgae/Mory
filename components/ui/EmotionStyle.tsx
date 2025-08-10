@@ -1,10 +1,10 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import styled from 'styled-components/native';
 
 export interface EmotionType {
   id: number;
   name: string;
-  color: readonly [string, string, ...string[]];
+  color: string; // 단색 배경
+  category: 'red' | 'yellow' | 'blue' | 'green';
 }
 
 export const Container = styled.SafeAreaView`
@@ -69,12 +69,13 @@ export const EmotionButton = styled.TouchableOpacity`
   align-items: center;
 `;
 
-export const EmotionCircle = styled(LinearGradient)`
+export const EmotionCircle = styled.View<{ backgroundColor: string }>`
   width: 120px;
   height: 120px;
   border-radius: 60px;
   justify-content: center;
   align-items: center;
+  background-color: ${props => props.backgroundColor};
 `;
 
 export const EmotionTitle = styled.Text`
