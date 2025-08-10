@@ -1,16 +1,16 @@
-import React, { useEffect, useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  Dimensions,
-  Animated,
-  TouchableOpacity,
-  SafeAreaView
-} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
 import { emotionData, EmotionItem } from '@/data/emotionData';
 import * as Haptics from 'expo-haptics';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  Dimensions,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -648,14 +648,6 @@ export default function EmotionGridScreen() {
             <Text style={{ color: '#FFFFFF', fontSize: 18 }}>←</Text>
           </TouchableOpacity>
 
-          <Text style={{
-            color: '#FFFFFF',
-            fontSize: 18,
-            fontWeight: '600'
-          }}>
-            감정 선택
-          </Text>
-
           <View style={{ width: 44 }} />
         </View>
 
@@ -680,79 +672,69 @@ export default function EmotionGridScreen() {
           </Animated.View>
         </PanGestureHandler>
 
+        {/* 중앙 안내 텍스트 (선택되지 않았을 때) */}
+        {!selectedEmotion && (
+          <View style={{
+            position: 'absolute',
+            width: 363,
+            bottom: 100,
+            left: SCREEN_WIDTH / 2 - 181.5, // 중앙 정렬
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#39373D',
+            borderRadius: 50.5,
+            padding: 10,
+          }}>
+            <Text style={{
+              color: '#FFFFFF',
+              fontSize: 16,
+              fontWeight: '500',
+              textAlign: 'center',
+              lineHeight: 30,
+            }}>
+              감정을 선택하여{'\n'}감정에 대해 알아보아요
+            </Text>
+          </View>
+        )}
+
         {/* 선택된 감정 정보 */}
         {selectedEmotion && (
           <Animated.View
             style={{
               position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: 'rgba(20, 20, 20, 0.8)',
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              padding: 24,
+              width: 363,
+              bottom: 100,
+              left: SCREEN_WIDTH / 2 - 181.5, // 중앙 정렬
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#39373D',
+              borderRadius: 50.5,
+              padding: 10,
               transform: [{ translateY: bottomSheetTranslateY }],
-
-              // 그림자 효과
-              shadowColor: '#000000',
-              shadowOffset: { width: 0, height: -6 },
-              shadowOpacity: 0.4,
-              shadowRadius: 12,
-              elevation: 12,
             }}
           >
+            {/* 감정 이름 */}
             <Text style={{
-              color: '#FFFFFF',
-              fontSize: 24,
-              fontWeight: '700',
+              color: selectedEmotion.color,
+              fontSize: 16,
+              fontWeight: '500',
               textAlign: 'center',
-              marginBottom: 8,
+              lineHeight: 25,
+              marginBottom: 4,
             }}>
               {selectedEmotion.name}
             </Text>
 
+            {/* 감정 설명 */}
             <Text style={{
               color: '#CCCCCC',
               fontSize: 16,
               textAlign: 'center',
-              marginBottom: 20,
+              lineHeight: 25,
+              marginBottom: 2,
             }}>
-              이 감정이 지금의 당신과 가장 가까운가요?
+              {selectedEmotion.description}
             </Text>
-
-            <TouchableOpacity
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-                router.back();
-              }}
-              style={{
-                backgroundColor: selectedEmotion.color,
-                borderRadius: 25,
-                paddingVertical: 15,
-                paddingHorizontal: 40,
-                alignSelf: 'center',
-
-                // 글래시 효과
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-
-                shadowColor: selectedEmotion.color,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.6,
-                shadowRadius: 8,
-                elevation: 8,
-              }}
-            >
-              <Text style={{
-                color: '#FFFFFF',
-                fontSize: 16,
-                fontWeight: '600',
-                textAlign: 'center',
-              }}>
-                이 감정 선택하기
-              </Text>
-            </TouchableOpacity>
           </Animated.View>
         )}
       </SafeAreaView>
