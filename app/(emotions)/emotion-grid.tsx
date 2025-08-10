@@ -289,6 +289,13 @@ export default function EmotionGridScreen() {
           x: clamped.x,
           y: clamped.y
         });
+
+        // 실시간으로 중앙 감정 찾기
+        const centerEmotion = findCenterEmotion();
+        if (centerEmotion && centerEmotion.id !== selectedEmotion?.id) {
+          handleEmotionPress(centerEmotion, false); // 클릭이 아닌 스크롤로 인한 선택
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
       }
     }
   );
@@ -304,30 +311,7 @@ export default function EmotionGridScreen() {
         useNativeDriver: false,
         tension: 100,
         friction: 8,
-      }).start(() => {
-        // 애니메이션 완료 후 중앙에 가장 가까운 감정을 찾아서 선택
-        const centerEmotion = findCenterEmotion();
-        if (centerEmotion && centerEmotion.id !== selectedEmotion?.id) {
-          setSelectedEmotion(centerEmotion);
-
-          // 선택된 감정에 대한 애니메이션 효과
-          Animated.sequence([
-            Animated.timing(bubbleAnimations[centerEmotion.id].scale, {
-              toValue: 1.2,
-              duration: 200,
-              useNativeDriver: true,
-            }),
-            Animated.timing(bubbleAnimations[centerEmotion.id].scale, {
-              toValue: 1.0,
-              duration: 200,
-              useNativeDriver: true,
-            })
-          ]).start();
-
-          // 햅틱 피드백
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
-      });
+      }).start();
     }
   };
 
@@ -385,8 +369,10 @@ export default function EmotionGridScreen() {
   };
 
   // 터치 이벤트 처리
-  const handleEmotionPress = (emotion: EmotionItem) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const handleEmotionPress = (emotion: EmotionItem, isClick: boolean = true) => {
+    if (isClick) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
 
     setSelectedEmotion(emotion);
 
@@ -449,11 +435,11 @@ export default function EmotionGridScreen() {
     });
   };
 
-  // 렌더링 함수들 (동적 투명도 적용)
+  // 렌더링 함수들 (향상된 UI 디자인)
   const renderBubble = (emotion: EmotionItem) => {
     const position = getHoneycombPosition(emotion);
     const size = getBubbleSize(emotion);
-    const dynamicOpacity = getBubbleOpacity(emotion); // 동적 투명도 계산
+    const dynamicOpacity = getBubbleOpacity(emotion);
     const isSelected = selectedEmotion?.id === emotion.id;
     const isHovered = hoveredEmotion === emotion.id;
 
@@ -469,7 +455,7 @@ export default function EmotionGridScreen() {
             { translateX: bubbleAnimations[emotion.id]?.translateX || 0 },
             { translateY: bubbleAnimations[emotion.id]?.translateY || 0 },
           ],
-          opacity: dynamicOpacity, // 동적 투명도 적용
+          opacity: dynamicOpacity,
         }}
       >
         <TouchableOpacity
@@ -484,36 +470,78 @@ export default function EmotionGridScreen() {
             justifyContent: 'center',
             alignItems: 'center',
 
-            // 애플워치 스타일 효과
-            borderWidth: isSelected ? 2 : 1,
+            // 향상된 테두리 효과
+            borderWidth: isSelected ? 3 : isHovered ? 2 : 1,
             borderColor: isSelected
-              ? 'rgba(255, 255, 255, 0.9)'
-              : 'rgba(255, 255, 255, 0.2)',
+              ? '#FFFFFF'
+              : isHovered
+                ? 'rgba(255, 255, 255, 0.6)'
+                : 'rgba(255, 255, 255, 0.15)',
 
-            // 깔끔한 그림자 효과 (투명도에 따라 조절)
+            // 글래스모피즘 효과
+            ...(isSelected && {
+              backgroundColor: `${emotion.color}E6`, // 약간 투명하게
+              backdropFilter: 'blur(10px)',
+            }),
+
+            // 향상된 그림자 효과
             shadowColor: isSelected ? '#FFFFFF' : emotion.color,
-            shadowOffset: { width: 0, height: isSelected ? 6 : 3 },
-            shadowOpacity: isSelected ? 0.8 : dynamicOpacity * 0.6, // 투명도 반영
-            shadowRadius: isSelected ? 10 : 5,
-            elevation: isSelected ? 10 : 5,
+            shadowOffset: {
+              width: 0,
+              height: isSelected ? 8 : isHovered ? 4 : 2
+            },
+            shadowOpacity: isSelected ? 0.9 : dynamicOpacity * 0.7,
+            shadowRadius: isSelected ? 15 : isHovered ? 8 : 4,
+            elevation: isSelected ? 15 : isHovered ? 8 : 3,
           }}
         >
+          {/* 내부 글로우 효과 */}
+          {isSelected && (
+            <View
+              style={{
+                position: 'absolute',
+                width: size - 8,
+                height: size - 8,
+                borderRadius: (size - 8) / 2,
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+              }}
+            />
+          )}
+
           {/* 감정 텍스트 */}
           <Text
             style={{
               color: '#FFFFFF',
-              fontSize: size * 0.15,
-              fontWeight: '600',
+              fontSize: isSelected ? size * 0.12 : size * 0.15, // 선택된 원은 텍스트 크기 조정
+              fontWeight: isSelected ? '700' : '600',
               textAlign: 'center',
-              textShadowColor: 'rgba(0, 0, 0, 0.8)',
+              textShadowColor: 'rgba(0, 0, 0, 0.9)',
               textShadowOffset: { width: 0, height: 1 },
-              textShadowRadius: 2,
-              opacity: Math.max(dynamicOpacity, 0.7), // 텍스트는 최소 투명도 보장
+              textShadowRadius: isSelected ? 3 : 2,
+              opacity: Math.max(dynamicOpacity, 0.8),
+              letterSpacing: isSelected ? 0.5 : 0,
             }}
-            numberOfLines={2}
+            numberOfLines={isSelected ? 3 : 2}
           >
             {emotion.name}
           </Text>
+
+          {/* 선택된 원에 맥동 효과 */}
+          {isSelected && (
+            <Animated.View
+              style={{
+                position: 'absolute',
+                width: size + 10,
+                height: size + 10,
+                borderRadius: (size + 10) / 2,
+                borderWidth: 2,
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                opacity: bubbleAnimations[emotion.id]?.opacity || 0.5,
+              }}
+            />
+          )}
         </TouchableOpacity>
       </Animated.View>
     );
@@ -555,30 +583,6 @@ export default function EmotionGridScreen() {
           <View style={{ width: 44 }} />
         </View>
 
-        {/* 화면 중앙 가이드 */}
-        <View style={{
-          position: 'absolute',
-          left: SCREEN_WIDTH / 2 - 20,
-          top: SCREEN_HEIGHT / 2 - 70,
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          borderWidth: 2,
-          borderColor: 'rgba(255, 255, 255, 0.3)',
-          backgroundColor: 'transparent',
-          zIndex: 1000,
-          pointerEvents: 'none', // 터치 이벤트 방지
-        }}>
-          <View style={{
-            position: 'absolute',
-            left: 18,
-            top: 18,
-            width: 4,
-            height: 4,
-            borderRadius: 2,
-            backgroundColor: 'rgba(255, 255, 255, 0.5)',
-          }} />
-        </View>
 
         {/* 스크롤 가능한 감정 그리드 */}
         <PanGestureHandler
