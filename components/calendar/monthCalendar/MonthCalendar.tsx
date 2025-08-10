@@ -239,10 +239,10 @@ export default function MonthCalendar() {
           }}
         />
       </S.CalendarWrapper>
-
-      {/* 말풍선 - 상황에 맞는 메시지 표시 */}
-      <SpeechBubble message={hasTodayDiary ? "오늘도 수고했어!" : "오늘 하루 어땠어?"} />
-
+      {/* 말풍선 - 오늘 일기를 작성하지 않았을 때만 표시 */}
+      {!hasTodayDiary && (
+        <SpeechBubble message="오늘 하루 어땠어?" />
+      )}
       {/* Write 버튼 - 항상 표시하여 일기 작성/수정 가능 */}
       <S.WriteButton
         onPress={() => {
