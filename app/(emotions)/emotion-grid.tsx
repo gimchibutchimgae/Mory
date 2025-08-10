@@ -14,12 +14,19 @@ import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// WineGlass 스타일 상수
+// 애플워치 스타일 상수
 const BUBBLE_SIZE = {
-  SMALL: 50,
-  MEDIUM: 85,
-  LARGE: 120,
-  SELECTED: 150
+  SMALL: 35,
+  MEDIUM: 60,
+  LARGE: 90,
+  SELECTED: 130
+};
+
+// 허니콤 그리드 상수
+const HEX_GRID = {
+  RADIUS: 35, // 기본 반지름
+  SPACING: 70, // 원 간격
+  RINGS: 4, // 총 링 개수
 };
 
 export default function EmotionGridScreen() {
@@ -116,6 +123,64 @@ export default function EmotionGridScreen() {
     return { x, y };
   };
 
+  // 애플워치 스타일 허니콤 그리드 위치 계산
+  const getHoneycombPosition = (emotion: EmotionItem) => {
+    const centerX = SCREEN_WIDTH / 2;
+    const centerY = SCREEN_HEIGHT / 2 - 50;
+
+    if (!selectedEmotion) {
+      // 원래 그리드 위치를 기반으로 허니콤 스타일 적용
+      const gridCols = 10;
+      const gridRows = 10;
+      const spacing = 65; // 약간 줄인 간격
+
+      // 그리드의 중심점 계산
+      const gridCenterX = (gridCols - 1) / 2;
+      const gridCenterY = (gridRows - 1) / 2;
+
+      // 감정의 그리드 상 위치에서 중심점까지의 거리
+      const offsetX = emotion.x - gridCenterX;
+      const offsetY = emotion.y - gridCenterY;
+
+      // 허니콤 패턴을 위한 약간의 오프셋 (홀수 행은 반칸 이동)
+      const hexOffset = emotion.y % 2 === 1 ? spacing * 0.5 : 0;
+
+      return {
+        x: centerX + (offsetX * spacing) + hexOffset,
+        y: centerY + (offsetY * spacing * 0.87) // 세로 간격을 약간 줄여서 허니콤 느낌
+      };
+    }
+
+    // 선택된 감정은 중심으로
+    if (emotion.id === selectedEmotion.id) {
+      return { x: centerX, y: centerY };
+    }
+
+    // 선택되지 않은 감정들은 바깥 링으로 배치
+    const deltaX = emotion.x - selectedEmotion.x;
+    const deltaY = emotion.y - selectedEmotion.y;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    let radius;
+    if (distance <= 1.5) {
+      radius = 120; // 가까운 감정들
+    } else if (distance <= 2.5) {
+      radius = 200; // 중간 거리
+    } else if (distance <= 3.5) {
+      radius = 280; // 먼 감정들
+    } else {
+      radius = 360; // 매우 먼 감정들
+    }
+
+    // 각도 계산
+    const angle = Math.atan2(deltaY, deltaX);
+
+    return {
+      x: centerX + Math.cos(angle) * radius,
+      y: centerY + Math.sin(angle) * radius
+    };
+  };
+
   // 화면 경계 내에 있는지 확인하는 함수
   const isInBounds = (position: { x: number; y: number }, size: number) => {
     const margin = size / 2 + 10; // 원의 반지름 + 여유 공간
@@ -126,6 +191,47 @@ export default function EmotionGridScreen() {
       position.y >= margin + 100 && // 상단 헤더 고려
       position.y <= SCREEN_HEIGHT - 300 // 하단 시트 고려
     );
+  };
+
+  // 원들이 겹치는지 확인하는 함수
+  const isOverlapping = (pos1: { x: number; y: number }, size1: number, pos2: { x: number; y: number }, size2: number) => {
+    const distance = Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
+    const minDistance = (size1 / 2) + (size2 / 2) + 5; // 5px 여유 공간
+    return distance < minDistance;
+  };
+
+  // 표시할 감정들을 필터링하는 함수
+  const getVisibleEmotions = () => {
+    const visibleEmotions: EmotionItem[] = [];
+
+    for (const emotion of emotionData) {
+      const position = getHoneycombPosition(emotion);
+      const size = getBubbleSize(emotion);
+
+      // 화면 경계 확인
+      if (!isInBounds(position, size)) {
+        continue;
+      }
+
+      // 다른 원들과의 겹침 확인
+      let hasOverlap = false;
+      for (const existingEmotion of visibleEmotions) {
+        const existingPosition = getHoneycombPosition(existingEmotion);
+        const existingSize = getBubbleSize(existingEmotion);
+
+        if (isOverlapping(position, size, existingPosition, existingSize)) {
+          hasOverlap = true;
+          break;
+        }
+      }
+
+      // 겹치지 않으면 표시할 목록에 추가
+      if (!hasOverlap) {
+        visibleEmotions.push(emotion);
+      }
+    }
+
+    return visibleEmotions;
   };
 
   // 버블 크기 계산 (거리 기반)
@@ -214,12 +320,11 @@ export default function EmotionGridScreen() {
 
   // 렌더링 함수들
   const renderBubble = (emotion: EmotionItem) => {
-    const position = getHexagonPosition(emotion);
+    const position = getHoneycombPosition(emotion); // 허니콤 패턴 사용
     const size = getBubbleSize(emotion);
     const isSelected = selectedEmotion?.id === emotion.id;
     const isHovered = hoveredEmotion === emotion.id;
 
-    // 화면 경계를 벗어나는 원은 렌더링하지 않음
     return (
       <Animated.View
         key={emotion.id}
@@ -247,31 +352,30 @@ export default function EmotionGridScreen() {
             justifyContent: 'center',
             alignItems: 'center',
 
-            // WineGlass 효과
-            borderWidth: isSelected ? 3 : isHovered ? 2 : 1,
+            // 애플워치 스타일 효과
+            borderWidth: isSelected ? 2 : 1,
             borderColor: isSelected
-              ? 'rgba(255, 255, 255, 0.8)'
-              : 'rgba(255, 255, 255, 0.3)',
+              ? 'rgba(255, 255, 255, 0.9)'
+              : 'rgba(255, 255, 255, 0.2)',
 
-            // 그림자 효과
-            shadowColor: emotion.color,
-            shadowOffset: { width: 0, height: isSelected ? 8 : 4 },
-            shadowOpacity: isSelected ? 0.6 : 0.3,
-            shadowRadius: isSelected ? 12 : 6,
-            elevation: isSelected ? 12 : 6,
+            // 깔끔한 그림자 효과
+            shadowColor: isSelected ? '#FFFFFF' : emotion.color,
+            shadowOffset: { width: 0, height: isSelected ? 6 : 3 },
+            shadowOpacity: isSelected ? 0.8 : 0.4,
+            shadowRadius: isSelected ? 10 : 5,
+            elevation: isSelected ? 10 : 5,
           }}
         >
           {/* 감정 텍스트 */}
           <Text
             style={{
               color: '#FFFFFF',
-              fontSize: size > 90 ? 12 : size > 70 ? 10 : 8,
-              fontWeight: 'bold',
+              fontSize: size > 60 ? 9 : 7,
+              fontWeight: '600',
               textAlign: 'center',
-              textShadowColor: 'rgba(0, 0, 0, 0.7)',
-              textShadowOffset: { width: 1, height: 1 },
+              textShadowColor: 'rgba(0, 0, 0, 0.8)',
+              textShadowOffset: { width: 0, height: 1 },
               textShadowRadius: 2,
-              paddingHorizontal: 4,
             }}
             numberOfLines={2}
           >
@@ -332,7 +436,7 @@ export default function EmotionGridScreen() {
               ],
             }}
           >
-            {emotionData.map(emotion => renderBubble(emotion))}
+            {getVisibleEmotions().map(emotion => renderBubble(emotion))}
           </Animated.View>
         </PanGestureHandler>
 
