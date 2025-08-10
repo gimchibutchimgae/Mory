@@ -14,19 +14,17 @@ import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// 애플워치 스타일 상수 (겹침 방지를 위한 정밀 조정)
+// 애플워치 스타일 상수 (SELECTED 150에 맞춘 적절한 크기 조절)
 const BUBBLE_SIZE = {
-  SMALL: 32,    // 35 → 32 (약간 축소)
-  MEDIUM: 55,   // 60 → 55 (약간 축소)
-  LARGE: 82,    // 90 → 82 (약간 축소)
-  SELECTED: 120 // 130 → 120 (약간 축소)
+  SMALL: 35,    // 40 → 35 (SELECTED의 23%)
+  MEDIUM: 60,   // 65 → 60 (SELECTED의 40%)
+  LARGE: 85,    // 90 → 85 (SELECTED의 57%)
+  SELECTED: 150 // 150 유지
 };
 
 // 허니콤 그리드 상수
 const HEX_GRID = {
-  RADIUS: 35, // 기본 반지름
-  SPACING: 70, // 원 간격
-  RINGS: 4, // 총 링 개수
+  RADIUS: 35 // 기본 반지름
 };
 
 export default function EmotionGridScreen() {
