@@ -89,12 +89,21 @@ export default function MonthCalendar() {
 
   // 오늘 일기 작성 여부 상태 (API 데이터에서 계산)
   const hasTodayDiary = useMemo(() => {
-    if (!monthData) return false;
+    if (!monthData) {
+      console.log('🗓️ [MonthCalendar] hasTodayDiary check - monthData is null/undefined, returning false');
+      return false;
+    }
     const todayDay = todayString.split('-')[2];
     const todayDayNumber = parseInt(todayDay, 10).toString();
     const todayEmotion = monthData[todayDayNumber];
-    console.log('🗓️ [MonthCalendar] hasTodayDiary check - todayString:', todayString, 'extracted day:', todayDayNumber, 'todayEmotion:', todayEmotion, 'result:', todayEmotion !== null && todayEmotion !== 'YET');
-    return todayEmotion !== null && todayEmotion !== 'YET';
+    const hasEmotion = todayEmotion !== null && todayEmotion !== 'YET';
+    console.log('🗓️ [MonthCalendar] hasTodayDiary check:');
+    console.log('  - todayString:', todayString);
+    console.log('  - extracted day:', todayDayNumber);
+    console.log('  - todayEmotion:', todayEmotion);
+    console.log('  - monthData:', monthData);
+    console.log('  - hasEmotion result:', hasEmotion);
+    return hasEmotion;
   }, [monthData, todayString]);
 
   // 오늘의 감정 상태 (API 데이터에서 가져오기)
@@ -230,22 +239,19 @@ export default function MonthCalendar() {
           }}
         />
       </S.CalendarWrapper>
-
       {/* 말풍선 - 오늘 일기를 작성하지 않았을 때만 표시 */}
       {!hasTodayDiary && (
         <SpeechBubble message="오늘 하루 어땠어?" />
       )}
-
-      {/* Write 버튼 - 일기 작성 화면으로 이동 */}
-      {!hasTodayDiary && (
-        <S.WriteButton
-          onPress={() => {
-            router.push('/(diary)/write' as any);
-          }}
-        >
-          <WriteSvg size={20} />
-        </S.WriteButton>
-      )}
+      {/* Write 버튼 - 항상 표시하여 일기 작성/수정 가능 */}
+      <S.WriteButton
+        onPress={() => {
+          console.log('🗓️ [MonthCalendar] Write button pressed - hasTodayDiary:', hasTodayDiary);
+          router.push('/(diary)/write' as any);
+        }}
+      >
+        <WriteSvg size={20} />
+      </S.WriteButton>
     </S.Container>
   );
 }
