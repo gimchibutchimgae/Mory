@@ -93,6 +93,7 @@ export default function RecordDetailScreen() {
   const { year, month, day } = useLocalSearchParams();
   const { token } = useContext(AuthContext);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+  const [diaryData, setDiaryData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -164,6 +165,9 @@ export default function RecordDetailScreen() {
 
         const diaryDetail = await diaryDetailResponse.json();
         console.log('📊 [RecordDetail] Diary detail received:', diaryDetail);
+
+        // 일기 데이터 저장
+        setDiaryData(diaryDetail);
 
         // 분석 데이터가 없는 경우 분석 요청
         if (!diaryDetail.analysis) {
@@ -365,6 +369,33 @@ export default function RecordDetailScreen() {
             </View>
           );
         })}
+
+      {/* 일기 내용 섹션 - diary/write 스타일 적용 */}
+      {diaryData && (
+        <View style={styles.diarySection}>
+          <Text style={styles.sectionTitle}>일기 내용</Text>
+
+          <View style={styles.diaryContainer}>
+            {/* 제목 섹션 */}
+            <View style={styles.diaryTitleContainer}>
+              <Text style={styles.diaryTitleLabel}>제목</Text>
+              <Text style={styles.diaryTitle}>{diaryData.title}</Text>
+            </View>
+
+            {/* 내용 섹션 */}
+            <View style={styles.diaryContentContainer}>
+              <Text style={styles.diaryContent}>{diaryData.content}</Text>
+
+              {/* 노트 라인 효과 */}
+              <View style={styles.noteLinesContainer}>
+                {Array.from({ length: Math.max(10, Math.ceil(diaryData.content?.length / 40) || 10) }, (_, index) => (
+                  <View key={index} style={styles.noteLine} />
+                ))}
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -500,5 +531,58 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 16,
     overflow: 'hidden',
+  },
+  diarySection: {
+    marginTop: 32,
+  },
+  diaryContainer: {
+    backgroundColor: 'rgba(20, 39, 64, 0.6)',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+  },
+  diaryTitleContainer: {
+    marginBottom: 16,
+  },
+  diaryTitleLabel: {
+    color: '#A0AEC0',
+    fontSize: 14,
+    fontWeight: '500',
+    fontFamily: 'Pretendard',
+    marginBottom: 8,
+  },
+  diaryTitle: {
+    color: '#E6F1FF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    fontFamily: 'Pretendard',
+  },
+  diaryContentContainer: {
+    position: 'relative',
+    minHeight: 200,
+    paddingTop: 16,
+  },
+  diaryContent: {
+    color: '#E6F1FF',
+    fontSize: 16,
+    fontWeight: '400',
+    fontFamily: 'Pretendard',
+    lineHeight: 24,
+    paddingHorizontal: 8,
+    zIndex: 1,
+  },
+  noteLinesContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingTop: 16,
+  },
+  noteLine: {
+    width: '100%',
+    height: 1,
+    backgroundColor: 'rgba(160, 174, 192, 0.2)',
+    marginBottom: 23,
   },
 });
