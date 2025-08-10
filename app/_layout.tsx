@@ -45,19 +45,27 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const { token } = useAuth();
 
+  const screenOptions = {
+    headerShown: false, // 상단 헤더 완전히 숨김
+    animation: "none" as const, // 애니메이션 없음
+    presentation: "card" as const, // 카드 스타일로 설정
+    animationDuration: 0, // 애니메이션 지속시간 0
+    gestureEnabled: false, // 스와이프 제스처 비활성화
+  };
+
   return (
     <Stack>
       {token ? (
         <>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(calendar)" options={{ headerShown: false }} />
-          <Stack.Screen name="(diary)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={screenOptions} />
+          <Stack.Screen name="(calendar)" options={screenOptions} />
+          <Stack.Screen name="(diary)" options={screenOptions} />
+          <Stack.Screen name="record-detail" options={screenOptions} />
         </>
       ) : (
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={screenOptions} />
       )}
-      <Stack.Screen name="+not-found" />
+      <Stack.Screen name="+not-found" options={screenOptions} />
     </Stack>
   );
 }
-
