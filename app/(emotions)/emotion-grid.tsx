@@ -46,6 +46,7 @@ export default function EmotionGridScreen() {
 
   const containerPanRef = useRef(new Animated.ValueXY());
   const containerScaleRef = useRef(new Animated.Value(1));
+  const bottomSheetTranslateY = useRef(new Animated.Value(300)).current;
 
   // ref에서 current 값 추출
   const bubbleAnimations = bubbleAnimationsRef.current;
@@ -66,6 +67,23 @@ export default function EmotionGridScreen() {
       }
     });
   }, [bubbleAnimations]);
+
+  useEffect(() => {
+    if (selectedEmotion) {
+      Animated.spring(bottomSheetTranslateY, {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 20,
+      }).start();
+    } else {
+      Animated.timing(bottomSheetTranslateY, {
+        toValue: 300,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [selectedEmotion, bottomSheetTranslateY]);
 
   // WineGlass 스타일 체계적 배치 계산 - 겹침 방지 및 화면 경계 처리
   const getHexagonPosition = (emotion: EmotionItem) => {
@@ -612,10 +630,11 @@ export default function EmotionGridScreen() {
               bottom: 0,
               left: 0,
               right: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.95)',
+              backgroundColor: 'rgba(20, 20, 20, 0.8)',
               borderTopLeftRadius: 24,
               borderTopRightRadius: 24,
               padding: 24,
+              transform: [{ translateY: bottomSheetTranslateY }],
 
               // 그림자 효과
               shadowColor: '#000000',
@@ -657,8 +676,8 @@ export default function EmotionGridScreen() {
                 alignSelf: 'center',
 
                 // 글래시 효과
-                borderWidth: 2,
-                borderColor: 'rgba(255, 255, 255, 0.3)',
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.2)',
 
                 shadowColor: selectedEmotion.color,
                 shadowOffset: { width: 0, height: 4 },
