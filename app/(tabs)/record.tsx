@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import {TouchableOpacity, Text, View, Image, Dimensions, StyleSheet, Platform, UIManager} from 'react-native';
-import { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '@/app/context/AuthContext';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/app/context/AuthContext';
 import { useCalendar } from '@/app/context/CalendarContext';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -10,7 +10,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 const DiaryGallery = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const { token } = useContext(AuthContext);
+  const { token } = useAuth();
   const { monthData, fetchMonthData } = useCalendar();
   const router = useRouter();
   const windowWidth = Dimensions.get('window').width;
