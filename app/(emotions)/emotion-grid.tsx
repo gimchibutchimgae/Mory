@@ -14,12 +14,12 @@ import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// 애플워치 스타일 상수
+// 애플워치 스타일 상수 (겹침 방지를 위한 정밀 조정)
 const BUBBLE_SIZE = {
-  SMALL: 35,
-  MEDIUM: 60,
-  LARGE: 90,
-  SELECTED: 130
+  SMALL: 32,    // 35 → 32 (약간 축소)
+  MEDIUM: 55,   // 60 → 55 (약간 축소)
+  LARGE: 82,    // 90 → 82 (약간 축소)
+  SELECTED: 120 // 130 → 120 (약간 축소)
 };
 
 // 허니콤 그리드 상수
@@ -123,16 +123,16 @@ export default function EmotionGridScreen() {
     return { x, y };
   };
 
-  // 애플워치 스타일 허니콤 그리드 위치 계산
+  // 애플워치 스타일 허니콤 그리드 위치 계산 (겹침 방지 최적화)
   const getHoneycombPosition = (emotion: EmotionItem) => {
     const centerX = SCREEN_WIDTH / 2;
     const centerY = SCREEN_HEIGHT / 2 - 50;
 
     if (!selectedEmotion) {
-      // 원래 그리드 위치를 기반으로 허니콤 스타일 적용
+      // 원래 그리드 위치를 기반으로 허니콤 스타일 적용 (간격 정밀 조정)
       const gridCols = 10;
       const gridRows = 10;
-      const spacing = 65; // 약간 줄인 간격
+      const spacing = 70; // 65 → 70 (약간 증가하여 겹침 완전 방지)
 
       // 그리드의 중심점 계산
       const gridCenterX = (gridCols - 1) / 2;
@@ -147,7 +147,7 @@ export default function EmotionGridScreen() {
 
       return {
         x: centerX + (offsetX * spacing) + hexOffset,
-        y: centerY + (offsetY * spacing * 0.87) // 세로 간격을 약간 줄여서 허니콤 느낌
+        y: centerY + (offsetY * spacing * 0.85) // 0.87 → 0.85 (세로 간격 조정)
       };
     }
 
@@ -156,20 +156,20 @@ export default function EmotionGridScreen() {
       return { x: centerX, y: centerY };
     }
 
-    // 선택되지 않은 감정들은 바깥 링으로 배치
+    // 선택되지 않은 감정들은 바깥 링으로 배치 (간격 정밀 조정)
     const deltaX = emotion.x - selectedEmotion.x;
     const deltaY = emotion.y - selectedEmotion.y;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     let radius;
     if (distance <= 1.5) {
-      radius = 120; // 가까운 감정들
+      radius = 130; // 120 → 130 (첫 번째 링 간격 증가)
     } else if (distance <= 2.5) {
-      radius = 200; // 중간 거리
+      radius = 210; // 200 → 210 (두 번째 링 간격 증가)
     } else if (distance <= 3.5) {
-      radius = 280; // 먼 감정들
+      radius = 290; // 280 → 290 (세 번째 링 간격 증가)
     } else {
-      radius = 360; // 매우 먼 감정들
+      radius = 370; // 360 → 370 (외곽 링 간격 증가)
     }
 
     // 각도 계산
@@ -200,41 +200,140 @@ export default function EmotionGridScreen() {
     return distance < minDistance;
   };
 
-  // 표시할 감정들을 필터링하는 함수
+  // 표시할 감정들을 필터링하는 함수 (모든 감정을 표시하도록 수정)
   const getVisibleEmotions = () => {
-    const visibleEmotions: EmotionItem[] = [];
-
-    for (const emotion of emotionData) {
-      const position = getHoneycombPosition(emotion);
-      const size = getBubbleSize(emotion);
-
-      // 화면 경계 확인
-      if (!isInBounds(position, size)) {
-        continue;
-      }
-
-      // 다른 원들과의 겹침 확인
-      let hasOverlap = false;
-      for (const existingEmotion of visibleEmotions) {
-        const existingPosition = getHoneycombPosition(existingEmotion);
-        const existingSize = getBubbleSize(existingEmotion);
-
-        if (isOverlapping(position, size, existingPosition, existingSize)) {
-          hasOverlap = true;
-          break;
-        }
-      }
-
-      // 겹치지 않으면 표시할 목록에 추가
-      if (!hasOverlap) {
-        visibleEmotions.push(emotion);
-      }
-    }
-
-    return visibleEmotions;
+    // 모든 감정을 표시하도록 변경
+    return emotionData;
   };
 
-  // 버블 크기 계산 (거리 기반)
+  // 화면 중앙에 가장 가까운 감정을 찾는 함수
+  const findCenterEmotion = () => {
+    const centerX = SCREEN_WIDTH / 2;
+    const centerY = SCREEN_HEIGHT / 2 - 50;
+
+    let closestEmotion: EmotionItem | null = null;
+    let minDistance = Infinity;
+
+    emotionData.forEach(emotion => {
+      const position = getHoneycombPosition(emotion);
+
+      // 컨테이너의 이동을 고려한 실제 위치 계산 (리스너에서 직접 값을 받도록 수정)
+      const currentPanX = (containerPan.x as any)._value || 0;
+      const currentPanY = (containerPan.y as any)._value || 0;
+
+      const actualX = position.x + currentPanX;
+      const actualY = position.y + currentPanY;
+
+      // 화면 중앙과의 거리 계산
+      const distance = Math.sqrt(
+        Math.pow(actualX - centerX, 2) +
+        Math.pow(actualY - centerY, 2)
+      );
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestEmotion = emotion;
+      }
+    });
+
+    return closestEmotion;
+  };
+
+  // 그리드 경계 계산 함수
+  const getGridBounds = () => {
+    if (!selectedEmotion) {
+      // 기본 그리드 상태에서의 경계
+      const gridSize = 9;
+      const spacing = 90;
+      const totalWidth = gridSize * spacing;
+      const totalHeight = gridSize * spacing;
+
+      return {
+        minX: -(totalWidth / 2 - SCREEN_WIDTH / 2),
+        maxX: totalWidth / 2 - SCREEN_WIDTH / 2,
+        minY: -(totalHeight / 2 - SCREEN_HEIGHT / 2 + 200), // 헤더/하단 여유공간
+        maxY: totalHeight / 2 - SCREEN_HEIGHT / 2 + 200
+      };
+    } else {
+      // 선택된 상태에서의 경계 (더 넓은 범위)
+      const maxRadius = 520; // 가장 먼 감정들이 배치되는 반지름
+      const margin = 100; // 여유 공간
+
+      return {
+        minX: -(maxRadius + margin - SCREEN_WIDTH / 2),
+        maxX: maxRadius + margin - SCREEN_WIDTH / 2,
+        minY: -(maxRadius + margin - SCREEN_HEIGHT / 2 + 200),
+        maxY: maxRadius + margin - SCREEN_HEIGHT / 2 + 200
+      };
+    }
+  };
+
+  // 경계 내로 위치를 제한하는 함수
+  const clampToBounds = (x: number, y: number) => {
+    const bounds = getGridBounds();
+    return {
+      x: Math.max(bounds.minX, Math.min(bounds.maxX, x)),
+      y: Math.max(bounds.minY, Math.min(bounds.maxY, y))
+    };
+  };
+
+  // 팬 제스처 처리 (경계 제한 추가)
+  const onGestureEvent = Animated.event(
+    [{ nativeEvent: { translationX: containerPan.x, translationY: containerPan.y } }],
+    {
+      useNativeDriver: false,
+      listener: (event: any) => {
+        const { translationX, translationY } = event.nativeEvent;
+        const clamped = clampToBounds(translationX, translationY);
+
+        // 경계를 벗어나려 할 때 저항감 추가
+        containerPan.setValue({
+          x: clamped.x,
+          y: clamped.y
+        });
+      }
+    }
+  );
+
+  const onHandlerStateChange = (event: any) => {
+    if (event.nativeEvent.state === State.END) {
+      const { translationX, translationY } = event.nativeEvent;
+      const clamped = clampToBounds(translationX, translationY);
+
+      // 경계 내의 가까운 위치로 스프링 애니메이션
+      Animated.spring(containerPan, {
+        toValue: { x: clamped.x, y: clamped.y },
+        useNativeDriver: false,
+        tension: 100,
+        friction: 8,
+      }).start(() => {
+        // 애니메이션 완료 후 중앙에 가장 가까운 감정을 찾아서 선택
+        const centerEmotion = findCenterEmotion();
+        if (centerEmotion && centerEmotion.id !== selectedEmotion?.id) {
+          setSelectedEmotion(centerEmotion);
+
+          // 선택된 감정에 대한 애니메이션 효과
+          Animated.sequence([
+            Animated.timing(bubbleAnimations[centerEmotion.id].scale, {
+              toValue: 1.2,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(bubbleAnimations[centerEmotion.id].scale, {
+              toValue: 1.0,
+              duration: 200,
+              useNativeDriver: true,
+            })
+          ]).start();
+
+          // 햅틱 피드백
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+      });
+    }
+  };
+
+  // 버블 크기 계산 (동심원 기준)
   const getBubbleSize = (emotion: EmotionItem) => {
     if (!selectedEmotion) {
       return BUBBLE_SIZE.MEDIUM;
@@ -250,9 +349,41 @@ export default function EmotionGridScreen() {
       Math.pow(emotion.y - selectedEmotion.y, 2)
     );
 
-    if (distance <= 1) return BUBBLE_SIZE.LARGE;
-    if (distance <= 2) return BUBBLE_SIZE.MEDIUM;
-    return BUBBLE_SIZE.SMALL;
+    // 동심원 기준으로 같은 반지름 내의 감정들은 같은 크기
+    if (distance <= 1.5) return BUBBLE_SIZE.LARGE;   // 첫 번째 원 (가장 가까운 감정들)
+    if (distance <= 2.5) return BUBBLE_SIZE.MEDIUM;  // 두 번째 원
+    if (distance <= 3.5) return BUBBLE_SIZE.SMALL;   // 세 번째 원
+    return BUBBLE_SIZE.SMALL;                         // 그 외 모든 감정들
+  };
+
+  // 동적 투명도 계산 함수 (선택된 원 기준)
+  const getBubbleOpacity = (emotion: EmotionItem) => {
+    if (!selectedEmotion) {
+      return 0.8; // 기본 투명도
+    }
+
+    if (emotion.id === selectedEmotion.id) {
+      return 1.0; // 선택된 감정은 완전히 불투명
+    }
+
+    // 선택된 감정과의 거리 계산
+    const distance = Math.sqrt(
+      Math.pow(emotion.x - selectedEmotion.x, 2) +
+      Math.pow(emotion.y - selectedEmotion.y, 2)
+    );
+
+    // 거리에 따른 부드러운 투명도 변화 (선형 감소)
+    if (distance <= 1.5) {
+      return 0.95; // 첫 번째 원 - 거의 불투명
+    } else if (distance <= 2.5) {
+      return 0.8;  // 두 번째 원 - 약간 투명
+    } else if (distance <= 3.5) {
+      return 0.5;  // 세 번째 원 - 반투명
+    } else if (distance <= 4.5) {
+      return 0.3;  // 네 번째 원 - 상당히 투명
+    } else {
+      return 0.15; // 그 외 - 매우 투명
+    }
   };
 
   // 터치 이벤트 처리
@@ -275,7 +406,7 @@ export default function EmotionGridScreen() {
       })
     ]).start();
 
-    // 다른 버블들 애니메이션
+    // 다른 버블들 애니메이션 (동심원 기준)
     emotionData.forEach(otherEmotion => {
       if (otherEmotion.id !== emotion.id) {
         const distance = Math.sqrt(
@@ -283,8 +414,26 @@ export default function EmotionGridScreen() {
           Math.pow(otherEmotion.y - emotion.y, 2)
         );
 
-        const targetOpacity = distance <= 2 ? 0.9 : 0.3;
-        const targetScale = distance <= 1 ? 1.05 : distance <= 2 ? 1 : 0.8;
+        // 동심원 기준으로 같은 반지름 내의 감정들은 같은 불투명도와 스케일
+        let targetOpacity, targetScale;
+
+        if (distance <= 1.5) {
+          // 첫 번째 원 - 높은 불투명도, 약간 확대
+          targetOpacity = 0.9;
+          targetScale = 1.05;
+        } else if (distance <= 2.5) {
+          // 두 번째 원 - 중간 불투명도, 기본 크기
+          targetOpacity = 0.7;
+          targetScale = 1.0;
+        } else if (distance <= 3.5) {
+          // 세 번째 원 - 낮은 불투명도, 약간 축소
+          targetOpacity = 0.4;
+          targetScale = 0.9;
+        } else {
+          // 그 외 - 매우 낮은 불투명도, 축소
+          targetOpacity = 0.3;
+          targetScale = 0.8;
+        }
 
         Animated.parallel([
           Animated.timing(bubbleAnimations[otherEmotion.id].opacity, {
@@ -302,26 +451,11 @@ export default function EmotionGridScreen() {
     });
   };
 
-  // 팬 제스처 처리
-  const onGestureEvent = Animated.event(
-    [{ nativeEvent: { translationX: containerPan.x, translationY: containerPan.y } }],
-    { useNativeDriver: false }
-  );
-
-  const onHandlerStateChange = (event: any) => {
-    if (event.nativeEvent.state === State.END) {
-      // 스냅 백 애니메이션
-      Animated.spring(containerPan, {
-        toValue: { x: 0, y: 0 },
-        useNativeDriver: false,
-      }).start();
-    }
-  };
-
-  // 렌더링 함수들
+  // 렌더링 함수들 (동적 투명도 적용)
   const renderBubble = (emotion: EmotionItem) => {
-    const position = getHoneycombPosition(emotion); // 허니콤 패턴 사용
+    const position = getHoneycombPosition(emotion);
     const size = getBubbleSize(emotion);
+    const dynamicOpacity = getBubbleOpacity(emotion); // 동적 투명도 계산
     const isSelected = selectedEmotion?.id === emotion.id;
     const isHovered = hoveredEmotion === emotion.id;
 
@@ -337,7 +471,7 @@ export default function EmotionGridScreen() {
             { translateX: bubbleAnimations[emotion.id]?.translateX || 0 },
             { translateY: bubbleAnimations[emotion.id]?.translateY || 0 },
           ],
-          opacity: bubbleAnimations[emotion.id]?.opacity || 0.8,
+          opacity: dynamicOpacity, // 동적 투명도 적용
         }}
       >
         <TouchableOpacity
@@ -358,10 +492,10 @@ export default function EmotionGridScreen() {
               ? 'rgba(255, 255, 255, 0.9)'
               : 'rgba(255, 255, 255, 0.2)',
 
-            // 깔끔한 그림자 효과
+            // 깔끔한 그림자 효과 (투명도에 따라 조절)
             shadowColor: isSelected ? '#FFFFFF' : emotion.color,
             shadowOffset: { width: 0, height: isSelected ? 6 : 3 },
-            shadowOpacity: isSelected ? 0.8 : 0.4,
+            shadowOpacity: isSelected ? 0.8 : dynamicOpacity * 0.6, // 투명도 반영
             shadowRadius: isSelected ? 10 : 5,
             elevation: isSelected ? 10 : 5,
           }}
@@ -370,12 +504,13 @@ export default function EmotionGridScreen() {
           <Text
             style={{
               color: '#FFFFFF',
-              fontSize: size * 0.15, // 원 크기의 15% 비율로 폰트 크기 설정
+              fontSize: size * 0.15,
               fontWeight: '600',
               textAlign: 'center',
               textShadowColor: 'rgba(0, 0, 0, 0.8)',
               textShadowOffset: { width: 0, height: 1 },
               textShadowRadius: 2,
+              opacity: Math.max(dynamicOpacity, 0.7), // 텍스트는 최소 투명도 보장
             }}
             numberOfLines={2}
           >
@@ -385,6 +520,8 @@ export default function EmotionGridScreen() {
       </Animated.View>
     );
   };
+
+  const visibleEmotions = getVisibleEmotions();
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -420,7 +557,32 @@ export default function EmotionGridScreen() {
           <View style={{ width: 44 }} />
         </View>
 
-        {/* WineGlass 스타일 그리드 */}
+        {/* 화면 중앙 가이드 */}
+        <View style={{
+          position: 'absolute',
+          left: SCREEN_WIDTH / 2 - 20,
+          top: SCREEN_HEIGHT / 2 - 70,
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          borderWidth: 2,
+          borderColor: 'rgba(255, 255, 255, 0.3)',
+          backgroundColor: 'transparent',
+          zIndex: 1000,
+          pointerEvents: 'none', // 터치 이벤트 방지
+        }}>
+          <View style={{
+            position: 'absolute',
+            left: 18,
+            top: 18,
+            width: 4,
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          }} />
+        </View>
+
+        {/* 스크롤 가능한 감정 그리드 */}
         <PanGestureHandler
           onGestureEvent={onGestureEvent}
           onHandlerStateChange={onHandlerStateChange}

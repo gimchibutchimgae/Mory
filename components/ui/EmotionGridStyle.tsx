@@ -65,7 +65,7 @@ export const EmotionItem = styled.TouchableOpacity<{
 
 // 애플워치 스타일 원형 감정 (더 입체적인 효과)
 export const EmotionCircle = styled.View<{
-  backgroundColor: string; 
+  backgroundColor: string;
   size: number;
   isSelected?: boolean;
 }>`
