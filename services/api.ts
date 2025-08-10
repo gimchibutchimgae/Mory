@@ -28,7 +28,8 @@ export const calendarAPI = {
       throw new Error(`API Error: ${response.status} - ${errorText}`);
     }
     const data = await response.json();
-    console.log(`✅ Calendar data received for month ${month}:`, Object.keys(data).length, 'days');
+    console.log(`✅ Calendar data received for month ${month}:`, data);
+    console.log(`✅ Calendar data structure:`, JSON.stringify(data, null, 2));
     return data;
   },
 };

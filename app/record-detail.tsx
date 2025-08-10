@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Svg, { Path, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { gradientColors } from '@/components/calendar/monthCalendar/style';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import api from '@/services/api';
+import { AuthContext } from '@/app/context/AuthContext';
 
 // --- Helper Functions for Semi-circle Chart ---
 const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
@@ -88,49 +88,174 @@ interface AnalysisData {
   };
 }
 
-const mockAnalysisData: AnalysisData = {
-  primary_emotion_type: 'YELLOW',
-  emotions: {
-    RED: ['격분한', '초조한'],
-    YELLOW: ['역겨운'],
-    BLUE: ['긍정적인'],
-    GREEN: ['태평한'],
-  },
-  ratio: [
-    ['RED', 0.6],
-    ['BLUE', 0.2],
-    ['YELLOW', 0.1],
-    ['GREEN', 0.1],
-  ],
-  diary: {
-    year: 2025,
-    month: 7,
-    day: 13,
-  },
-};
-
 export default function RecordDetailScreen() {
   const router = useRouter();
-  const { diaryId } = useLocalSearchParams();
-  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(mockAnalysisData);
-  const [loading, setLoading] = useState(false);
+  const { year, month, day } = useLocalSearchParams();
+  const { token } = useContext(AuthContext);
+  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   const fetchAnalysis = async () => {
-  //     try {
-  //       if (diaryId) {
-  //         const response = await api.get(`/analysis/${diaryId}`);
-  //         setAnalysisData(response.data);
-  //       }
-  //     } catch (error) {
-  //       console.error('Failed to fetch analysis data:', error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchAnalysis = async () => {
+      if (!token || !year || !month || !day) {
+        console.log('📊 [RecordDetail] Missing parameters:', { token: !!token, year, month, day });
+        setLoading(false);
+        return;
+      }
 
-  //   fetchAnalysis();
-  // }, [diaryId]);
+      try {
+        console.log('📊 [RecordDetail] Fetching analysis for:', { year, month, day });
+
+        // 모든 일기를 가져와서 해당 날짜의 일기 찾기
+        const diariesUrl = `https://mory-backend-production.up.railway.app/diary`;
+        console.log('📊 [RecordDetail] Fetching all diaries from:', diariesUrl);
+
+        const diariesResponse = await fetch(diariesUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        console.log('📊 [RecordDetail] Diaries response status:', diariesResponse.status);
+
+        if (!diariesResponse.ok) {
+          const errorText = await diariesResponse.text();
+          console.error('📊 [RecordDetail] Diaries fetch error:', errorText);
+          throw new Error(`Diaries fetch failed: ${diariesResponse.status} - ${errorText}`);
+        }
+
+        const diariesData = await diariesResponse.json();
+        console.log('📊 [RecordDetail] All diaries received:', diariesData);
+
+        // 해당 날짜의 일기 찾기
+        const targetYear = parseInt(year as string);
+        const targetMonth = parseInt(month as string);
+        const targetDay = parseInt(day as string);
+
+        const targetDiary = diariesData.find((diary: any) =>
+          diary.year === targetYear &&
+          diary.month === targetMonth &&
+          diary.day === targetDay
+        );
+
+        console.log('📊 [RecordDetail] Target diary found:', targetDiary);
+
+        if (!targetDiary) {
+          console.log('📊 [RecordDetail] No diary found for this date');
+          setAnalysisData(null);
+          return;
+        }
+
+        // 해당 일기의 상세 정보 가져오기 (분석 데이터 포함)
+        const diaryDetailUrl = `https://mory-backend-production.up.railway.app/diary/view/${targetDiary.id}`;
+        console.log('📊 [RecordDetail] Fetching diary detail from:', diaryDetailUrl);
+
+        const diaryDetailResponse = await fetch(diaryDetailUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!diaryDetailResponse.ok) {
+          const errorText = await diaryDetailResponse.text();
+          console.error('📊 [RecordDetail] Diary detail fetch error:', errorText);
+          throw new Error(`Diary detail fetch failed: ${diaryDetailResponse.status} - ${errorText}`);
+        }
+
+        const diaryDetail = await diaryDetailResponse.json();
+        console.log('📊 [RecordDetail] Diary detail received:', diaryDetail);
+
+        // 분석 데이터가 없는 경우 분석 요청
+        if (!diaryDetail.analysis) {
+          console.log('📊 [RecordDetail] No analysis data found, requesting analysis generation');
+
+          const analysisGenerateResponse = await fetch(`https://mory-backend-production.up.railway.app/analysis/gpt`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              diaryId: targetDiary.id
+            })
+          });
+
+          if (!analysisGenerateResponse.ok) {
+            const errorText = await analysisGenerateResponse.text();
+            console.error('📊 [RecordDetail] Analysis generation error:', errorText);
+            throw new Error(`Analysis generation failed: ${analysisGenerateResponse.status} - ${errorText}`);
+          }
+
+          const analysisResult = await analysisGenerateResponse.json();
+          console.log('📊 [RecordDetail] Analysis generated:', analysisResult);
+
+          // 분석이 완료되면 다시 일기 상세 정보를 가져와서 분석 데이터 확인
+          const updatedDiaryResponse = await fetch(diaryDetailUrl, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          if (updatedDiaryResponse.ok) {
+            const updatedDiary = await updatedDiaryResponse.json();
+            console.log('📊 [RecordDetail] Updated diary with analysis:', updatedDiary);
+
+            if (updatedDiary.analysis) {
+              const transformedData: AnalysisData = {
+                primary_emotion_type: updatedDiary.analysis.primary_emotion_type,
+                emotions: updatedDiary.analysis.feel || {
+                  RED: [],
+                  YELLOW: [],
+                  GREEN: [],
+                  BLUE: []
+                },
+                ratio: Object.entries(updatedDiary.analysis.ratio || {}).map(([emotion, value]) => [emotion, value as number]),
+                diary: {
+                  year: targetYear,
+                  month: targetMonth,
+                  day: targetDay,
+                }
+              };
+              setAnalysisData(transformedData);
+              return;
+            }
+          }
+
+          // 여전히 분석 데이터가 없으면 에러
+          console.log('📊 [RecordDetail] Still no analysis data after generation');
+          setAnalysisData(null);
+          return;
+        }
+
+        // 분석 데이터가 있는 경우 변환
+        const transformedData: AnalysisData = {
+          primary_emotion_type: diaryDetail.analysis.primary_emotion_type,
+          emotions: diaryDetail.analysis.feel || {
+            RED: [],
+            YELLOW: [],
+            GREEN: [],
+            BLUE: []
+          },
+          ratio: Object.entries(diaryDetail.analysis.ratio || {}).map(([emotion, value]) => [emotion, value as number]),
+          diary: {
+            year: targetYear,
+            month: targetMonth,
+            day: targetDay,
+          }
+        };
+
+        console.log('📊 [RecordDetail] Transformed analysis data:', transformedData);
+        setAnalysisData(transformedData);
+      } catch (error) {
+        console.error('📊 [RecordDetail] Failed to fetch analysis data:', error);
+        setAnalysisData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalysis();
+  }, [year, month, day, token]);
 
   const getEmotionGradient = (emotion: string): string[] => {
     const emotionKey = emotion.toLowerCase() as keyof typeof gradientColors;

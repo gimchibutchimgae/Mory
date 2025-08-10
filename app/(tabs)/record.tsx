@@ -128,7 +128,16 @@ const DiaryGallery = () => {
       </View>
 
       {/* 내용보기 버튼 */}
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/record-detail')}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          const year = currentDate.getFullYear();
+          const month = currentDate.getMonth() + 1;
+          const day = currentDate.getDate();
+          console.log('📖 [DiaryGallery] Navigating to record-detail with date:', { year, month, day });
+          router.push(`/record-detail?year=${year}&month=${month}&day=${day}` as any);
+        }}
+      >
         <Text style={styles.buttonText}>내용보기</Text>
       </TouchableOpacity>
     </View>
