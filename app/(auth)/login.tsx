@@ -1,9 +1,9 @@
-import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { googleSignInApi, loginApi } from '@/api/auth';
+import { useAuth } from '@/app/context/AuthContext';
 import GoogleSignInButton from '@/components/GoogleSignInButton';
 import { Colors } from '@/constants/Colors';
-import { useAuth } from '@/app/context/AuthContext';
-import { googleSignInApi, loginApi } from '@/api/auth';
+import { useRouter } from 'expo-router';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function LoginScreen() {
       console.log('Email:', googleEmail);
       console.log('Name:', name);
 
-      if (status === 'login' && accessToken) {
+      if (accessToken) {
         signIn(accessToken);
         router.replace('/(tabs)/');
       } else if (status === 'register' && googleEmail && name) {
