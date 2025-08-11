@@ -20,7 +20,7 @@ export default function ProfileMenu({ userPersonality1, userPersonality2, onLogo
       personalityText += userPersonality1;
     }
     if (userPersonality2) {
-      personalityText += (personalityText ? '고 ' : '') + userPersonality2;
+      personalityText += (personalityText ? '하고 ' : '') + userPersonality2;
     }
     return personalityText || '미설정';
   };
