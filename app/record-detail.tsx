@@ -269,9 +269,9 @@ export default function RecordDetailScreen() {
   const getEmotionText = (emotion: string) => {
     switch (emotion) {
       case 'RED': return '화남';
-      case 'YELLOW': return '기쁨';
+      case 'YELLOW': return '슬픔';
       case 'GREEN': return '평온';
-      case 'BLUE': return '슬픔';
+      case 'BLUE': return '기쁨';
       default: return '';
     }
   };

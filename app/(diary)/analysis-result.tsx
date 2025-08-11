@@ -4,11 +4,23 @@ import React, { useEffect } from 'react';
 
 export const options = { headerShown: false };
 
+// 한국 시간대(KST) 기준 오늘 날짜 가져오기
+function getKSTToday(): { year: number; month: number; day: number } {
+  const now = new Date();
+  const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return {
+    year: kstDate.getUTCFullYear(),
+    month: kstDate.getUTCMonth() + 1,
+    day: kstDate.getUTCDate()
+  };
+}
+
 export default function AnalysisResultScreen() {
   useEffect(() => {
-    // 몇 초 후 분석 결과 화면으로 이동 (임시로 홈으로 이동)
+    // 몇 초 후 분석 기록 조회 페이지로 이동
     const timer = setTimeout(() => {
-      router.replace('/(tabs)');
+      const today = getKSTToday();
+      router.replace(`/record-detail?year=${today.year}&month=${today.month}&day=${today.day}`);
     }, 3000);
 
     return () => clearTimeout(timer);
